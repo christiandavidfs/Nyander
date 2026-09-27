@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: nyander-api
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_SECRET
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: PAYPAL_SANDBOX
+        value: true
+      - key: PLATFORM_FEE_PERCENT
+        value: 10
+      - key: BASE_URL
+        sync: false

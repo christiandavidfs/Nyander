@@ -1,0 +1,20 @@
+INSERT INTO countries (code, name, currency, tax_name, tax_rate, flag) VALUES
+  ('US', 'United States', 'USD', 'Sales Tax', 8.00, '🇺🇸'),
+  ('GB', 'United Kingdom', 'GBP', 'VAT', 20.00, '🇬🇧'),
+  ('ES', 'Spain', 'EUR', 'IVA', 21.00, '🇪🇸'),
+  ('MX', 'Mexico', 'MXN', 'IVA', 16.00, '🇲🇽'),
+  ('CO', 'Colombia', 'COP', 'IVA', 19.00, '🇨🇴'),
+  ('AR', 'Argentina', 'ARS', 'IVA', 21.00, '🇦🇷'),
+  ('CL', 'Chile', 'CLP', 'IVA', 19.00, '🇨🇱'),
+  ('PE', 'Peru', 'PEN', 'IGV', 18.00, '🇵🇪'),
+  ('BR', 'Brazil', 'BRL', 'ICMS', 18.00, '🇧🇷'),
+  ('DE', 'Germany', 'EUR', 'VAT', 19.00, '🇩🇪'),
+  ('FR', 'France', 'EUR', 'TVA', 20.00, '🇫🇷'),
+  ('IT', 'Italy', 'EUR', 'IVA', 22.00, '🇮🇹'),
+  ('PT', 'Portugal', 'EUR', 'IVA', 23.00, '🇵🇹'),
+  ('NL', 'Netherlands', 'EUR', 'VAT', 21.00, '🇳🇱'),
+  ('PL', 'Poland', 'PLN', 'VAT', 23.00, '🇵🇱'),
+  ('JP', 'Japan', 'JPY', 'Consumption Tax', 10.00, '🇯🇵'),
+  ('AU', 'Australia', 'AUD', 'GST', 10.00, '🇦🇺'),
+  ('CA', 'Canada', 'CAD', 'GST/HST', 13.00, '🇨🇦')
+ON CONFLICT (code) DO NOTHING;

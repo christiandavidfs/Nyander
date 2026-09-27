@@ -1,0 +1,36 @@
+{
+  "cli": {
+    "version": ">= 20.4.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://chfxzyyxellkdyvwgplw.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoZnh6eXl4ZWxsa2R5dndncGx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MjQyNzMsImV4cCI6MjA5ODEwMDI3M30.M9ZnK60wbQp_i9I-_LI4CMW89taRQuxoBev1u2gQevs",
+        "EXPO_PUBLIC_API_URL": "https://nyander-api.onrender.com"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://chfxzyyxellkdyvwgplw.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoZnh6eXl4ZWxsa2R5dndncGx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MjQyNzMsImV4cCI6MjA5ODEwMDI3M30.M9ZnK60wbQp_i9I-_LI4CMW89taRQuxoBev1u2gQevs",
+        "EXPO_PUBLIC_API_URL": "https://nyander-api.onrender.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://chfxzyyxellkdyvwgplw.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoZnh6eXl4ZWxsa2R5dndncGx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MjQyNzMsImV4cCI6MjA5ODEwMDI3M30.M9ZnK60wbQp_i9I-_LI4CMW89taRQuxoBev1u2gQevs",
+        "EXPO_PUBLIC_API_URL": "https://nyander-api.onrender.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
