@@ -18,7 +18,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function ManageSponsorScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, categoryName } = useI18n();
   const [sponsor, setSponsor] = useState<Sponsor | null>(null);
   const [clickCount, setClickCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -149,7 +149,7 @@ export default function ManageSponsorScreen() {
         </View>
         {sponsor.category && (
           <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{sponsor.category}</Text>
+            <Text style={styles.categoryText}>{categoryName(sponsor.category)}</Text>
           </View>
         )}
       </View>

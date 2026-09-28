@@ -10,7 +10,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
 import { useI18n } from '@/i18n';
 
-const CATEGORIES = ['Pet Store', 'Veterinarian', 'Grooming', 'Boarding', 'Pet Sitting', 'Training', 'Other'];
+const CATEGORIES = ['Pet Store', 'Veterinarian', 'Grooming', 'Boarding', 'Pet Sitting', 'Training', 'Other'] as const;
 
 const PRICES = {
   trial: { label: 'Trial 14 days', amount: 0 },
@@ -20,7 +20,7 @@ const PRICES = {
 
 export default function BecomeSponsorScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, categoryName } = useI18n();
   const [step, setStep] = useState(1);
 
   const [businessName, setBusinessName] = useState('');
@@ -244,7 +244,7 @@ export default function BecomeSponsorScreen() {
                 style={[styles.categoryChip, category === c && styles.categoryChipActive]}
                 onPress={() => setCategory(category === c ? '' : c)}
               >
-                <Text style={[styles.categoryChipText, category === c && styles.categoryChipTextActive]}>{c}</Text>
+                <Text style={[styles.categoryChipText, category === c && styles.categoryChipTextActive]}>{categoryName(c)}</Text>
               </TouchableOpacity>
             ))}
           </View>

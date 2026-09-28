@@ -13,7 +13,7 @@ type SponsorWithClicks = Sponsor & { click_count: number };
 
 export default function SponsorsScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, categoryName } = useI18n();
   const [sponsors, setSponsors] = useState<SponsorWithClicks[]>([]);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
@@ -161,7 +161,7 @@ export default function SponsorsScreen() {
                 <Text style={styles.businessName} numberOfLines={1}>{item.business_name}</Text>
                 {item.category && (
                   <View style={styles.categoryBadge}>
-                    <Text style={styles.categoryText}>{item.category}</Text>
+                    <Text style={styles.categoryText}>{categoryName(item.category)}</Text>
                   </View>
                 )}
                 {item.description && (

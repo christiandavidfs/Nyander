@@ -14,12 +14,26 @@ type Ctx = {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
+  countryName: (code: string | null, fallback?: string | null) => string;
+  categoryName: (value: string | null) => string;
+};
+
+const CATEGORY_KEYS: Record<string, string> = {
+  'Pet Store': 'petStore',
+  'Veterinarian': 'veterinarian',
+  'Grooming': 'grooming',
+  'Boarding': 'boarding',
+  'Pet Sitting': 'petSitting',
+  'Training': 'training',
+  'Other': 'other',
 };
 
 const I18nContext = createContext<Ctx>({
   lang: 'en',
   setLang: () => {},
   t: (key) => key,
+  countryName: (_code, fallback) => fallback ?? '',
+  categoryName: (value) => value ?? '',
 });
 
 function get(obj: any, path: string): string | undefined {
@@ -58,7 +72,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return s;
   }, [lang]);
 
-  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
+  const value = useMemo(() => ({
+    lang,
+    setLang,
+    t,
+    countryName: (code: string | null, fallback?: string | null) =>
+      (code && (get(dicts[lang].countries, code) ?? get(dicts.en.countries, code))) || fallback || code || '',
+    categoryName: (val: string | null) => {
+      if (!val) return '';
+      const key = CATEGORY_KEYS[val];
+      return key ? (get(dicts[lang].categories, key) ?? get(dicts.en.categories, key) ?? val) : val;
+    },
+  }), [lang, setLang, t]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 

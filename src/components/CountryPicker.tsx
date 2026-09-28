@@ -14,7 +14,7 @@ type Props = {
 }
 
 export default function CountryPicker({ value, onChange }: Props) {
-  const { t } = useI18n();
+  const { t, countryName } = useI18n();
   const [countries, setCountries] = useState<Country[]>([]);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -40,7 +40,7 @@ export default function CountryPicker({ value, onChange }: Props) {
     <>
       <TouchableOpacity style={styles.selector} onPress={() => setShow(true)}>
         <Text style={styles.selectorText}>
-          {selected ? `${selected.flag ?? ''} ${selected.name}` : t('countryPicker.select')}
+          {selected ? `${selected.flag ?? ''} ${countryName(selected.code, selected.name)}` : t('countryPicker.select')}
         </Text>
         <FontAwesome name="chevron-down" size={12} color={Colors.gray} />
       </TouchableOpacity>
@@ -62,7 +62,7 @@ export default function CountryPicker({ value, onChange }: Props) {
                     onPress={() => { onChange(item.code); setShow(false); }}
                   >
                     <Text style={styles.optionFlag}>{item.flag ?? ''}</Text>
-                    <Text style={styles.optionName}>{item.name}</Text>
+                    <Text style={styles.optionName}>{countryName(item.code, item.name)}</Text>
                     {item.code === value && (
                       <FontAwesome name="check" size={14} color={Colors.primary} />
                     )}
