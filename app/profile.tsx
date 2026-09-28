@@ -349,10 +349,12 @@ export default function ProfileScreen() {
             ))}
           </View>
         </View>
-        <TouchableOpacity style={styles.linkBtn} onPress={() => router.push('/sponsorships')}>
-          <FontAwesome name="heart" size={16} color={Colors.primary} />
-          <Text style={styles.linkBtnText}>{t('profile.mySponsorships')}</Text>
-        </TouchableOpacity>
+        {profile?.role !== 'centro' && (
+          <TouchableOpacity style={styles.linkBtn} onPress={() => router.push('/sponsorships')}>
+            <FontAwesome name="heart" size={16} color={Colors.primary} />
+            <Text style={styles.linkBtnText}>{t('profile.mySponsorships')}</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity style={styles.linkBtn} onPress={() => router.push('/manage-sponsor')}>
           <FontAwesome name="building" size={16} color={Colors.primary} />
           <Text style={styles.linkBtnText}>{t('profile.myBusiness')}</Text>

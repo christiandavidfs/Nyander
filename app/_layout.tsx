@@ -4,10 +4,34 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { I18nProvider, useI18n } from '@/i18n';
+import { useEffect, useState } from 'react';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 function TabLayoutInner() {
   const insets = useSafeAreaInsets();
   const { t } = useI18n();
+  const [isShelter, setIsShelter] = useState(false);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    let cancelled = false;
+    const loadRole = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user || cancelled) return;
+        const { data } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+        if (!cancelled) setIsShelter((data as any)?.role === 'centro');
+      } catch (_) {}
+    };
+    loadRole();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (!s?.user) { setIsShelter(false); return; }
+      supabase.from('profiles').select('role').eq('id', s.user.id).maybeSingle().then(({ data }) => {
+        if (!cancelled) setIsShelter((data as any)?.role === 'centro');
+      });
+    });
+    return () => { cancelled = true; subscription.unsubscribe(); };
+  }, []);
 
   return (
     <Tabs
@@ -56,6 +80,7 @@ function TabLayoutInner() {
         name="crossed"
         options={{
           title: t('tabs.crossed'),
+          href: isShelter ? null : undefined,
           tabBarIcon: ({ color }) => <FontAwesome name="map-marker" size={22} color={color} />,
         }}
       />

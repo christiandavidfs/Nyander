@@ -51,6 +51,7 @@ export default function CatDetailScreen() {
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeMedia, setActiveMedia] = useState(0);
+  const [isOwner, setIsOwner] = useState(false);
   const { t } = useI18n();
 
   const mediaItems = useMemo(() => {
@@ -80,11 +81,15 @@ export default function CatDetailScreen() {
       .select('*')
       .eq('id', id)
       .maybeSingle()
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (error) {
           console.error('Error fetching cat:', error);
         } else if (data) {
           setCat(toCat(data));
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            setIsOwner(!!session?.user && session.user.id === (data as any).shelter_id);
+          } catch (_) {}
         }
         setLoading(false);
       });
@@ -199,14 +204,29 @@ export default function CatDetailScreen() {
         </View>
 
         {/* Actions */}
-        {cat.status === 'available' && (
+        {cat.status === 'available' && !isOwner && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('catDetail.support', { name: cat.name })}</Text>
             <View style={styles.buttonRow}>
               <DonateButton catId={cat.id} catName={cat.name} shelterId={cat.shelter_id} />
               <SponsorButton catId={cat.id} catName={cat.name} shelterId={cat.shelter_id} />
             </View>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, alignSelf: 'center' }} onPress={async () => {
+          </View>
+        )}
+
+        {isOwner && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('catDetail.ownListing')}</Text>
+            <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/cats')}>
+              <FontAwesome name="pencil" size={16} color={Colors.primary} />
+              <Text style={styles.contactButtonText}>{t('catDetail.manageCta')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {(cat.status === 'available' || isOwner) && (
+          <View style={styles.section}>
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'center' }} onPress={async () => {
               const link = `https://nyander.app/c/${cat.id}`;
               try { if (Platform.OS === 'web') { await navigator.clipboard.writeText(link); Alert.alert(t('catDetail.linkCopied'), link); } else { const Sharing = await import('expo-sharing'); if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(link as any); else Alert.alert(t('catDetail.shareLink'), link); } } catch { Alert.alert(t('catDetail.shareLink'), link); }
             }}>
@@ -217,7 +237,7 @@ export default function CatDetailScreen() {
         )}
 
         {/* Adoption request */}
-        {cat.status === 'available' && (
+        {cat.status === 'available' && !isOwner && (
           <View style={styles.section}>
             <View style={{ gap: 10 }}>
               <TouchableOpacity

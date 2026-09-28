@@ -544,6 +544,10 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
   const [formImages, setFormImages] = useState<string[]>([]);
   const [formVideos, setFormVideos] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingVideos, setExistingVideos] = useState<string[]>([]);
+  const [formStatus, setFormStatus] = useState<'available' | 'adopted'>('available');
 
   const [requests, setRequests] = useState<(AdoptionRequest & { cat_name?: string; user_name?: string; user_phone?: string })[]>([]);
   const [showRequests, setShowRequests] = useState(false);
@@ -646,12 +650,28 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
     }
   };
 
-  const handleAddCat = async () => {
+  const openEdit = (cat: Cat) => {
+    setEditingId(cat.id);
+    setFormName(cat.name);
+    setFormAge(cat.age ?? '');
+    setFormBreed(cat.breed ?? '');
+    setFormDescription(cat.description ?? '');
+    setFormHealth(cat.health_status ?? '');
+    setFormLocation(cat.location ?? '');
+    setFormStatus(cat.status === 'adopted' ? 'adopted' : 'available');
+    setExistingImages(cat.image_urls ?? []);
+    setExistingVideos(cat.video_urls ?? []);
+    setFormImages([]);
+    setFormVideos([]);
+    setAddModal(true);
+  };
+
+  const handleSaveCat = async () => {
     if (!formName.trim()) { Alert.alert(t('common.required'), t('shelter.nameRequired')); return; }
     setSubmitting(true);
     try {
-      let imageUrls: string[] = [];
-      let videoUrls: string[] = [];
+      let imageUrls: string[] = [...existingImages];
+      let videoUrls: string[] = [...existingVideos];
 
       if (isSupabaseConfigured) {
         for (const uri of formImages) {
@@ -664,28 +684,44 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
         }
       }
 
-      const { error } = await supabase.from('cats').insert({
-        shelter_id: profile.id,
-        name: formName.trim(),
-        age: formAge || null,
-        breed: formBreed || null,
-        description: formDescription || null,
-        health_status: formHealth || null,
-        location: formLocation || profile.address || null,
-        latitude: profile.latitude,
-        longitude: profile.longitude,
-        image_urls: imageUrls,
-        video_urls: videoUrls,
-        country_code: profile.country_code,
-        status: 'available',
-      });
-      if (error) throw error;
-      Alert.alert('Added', `${formName} has been added.`);
+      if (editingId) {
+        const { error } = await supabase.from('cats').update({
+          name: formName.trim(),
+          age: formAge || null,
+          breed: formBreed || null,
+          description: formDescription || null,
+          health_status: formHealth || null,
+          location: formLocation || null,
+          image_urls: imageUrls,
+          video_urls: videoUrls,
+          status: formStatus,
+        }).eq('id', editingId);
+        if (error) throw error;
+        Alert.alert(t('common.success'), t('shelter.updated', { name: formName.trim() }));
+      } else {
+        const { error } = await supabase.from('cats').insert({
+          shelter_id: profile.id,
+          name: formName.trim(),
+          age: formAge || null,
+          breed: formBreed || null,
+          description: formDescription || null,
+          health_status: formHealth || null,
+          location: formLocation || profile.address || null,
+          latitude: profile.latitude,
+          longitude: profile.longitude,
+          image_urls: imageUrls,
+          video_urls: videoUrls,
+          country_code: profile.country_code,
+          status: 'available',
+        });
+        if (error) throw error;
+        Alert.alert(t('common.success'), t('shelter.added', { name: formName.trim() }));
+      }
       setAddModal(false);
       resetForm();
       loadMyCats();
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Alert.alert(t('common.error'), err.message);
     } finally {
       setSubmitting(false);
     }
@@ -741,6 +777,10 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
     setFormLocation('');
     setFormImages([]);
     setFormVideos([]);
+    setEditingId(null);
+    setExistingImages([]);
+    setExistingVideos([]);
+    setFormStatus('available');
   };
 
   if (loading) {
@@ -765,7 +805,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
               <Text style={shelterStyles.requestsBtnText}>{t('shelter.requests')}</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.addButton} onPress={() => setAddModal(true)}>
+          <TouchableOpacity style={styles.addButton} onPress={() => { resetForm(); setAddModal(true); }}>
             <FontAwesome name="plus" size={16} color="#fff" />
             <Text style={styles.addButtonText}>{t('shelter.addPet')}</Text>
           </TouchableOpacity>
@@ -815,6 +855,12 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
                 </View>
               </View>
               <TouchableOpacity
+                style={shelterStyles.editBtn}
+                onPress={() => openEdit(item)}
+              >
+                <FontAwesome name="pencil" size={16} color={Colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity
                 style={shelterStyles.deleteBtn}
                 onPress={() => {
                   Alert.alert(t('shelter.deleteTitle'), t('shelter.deleteMsg', { name: item.name }), [
@@ -833,7 +879,26 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
       <Modal visible={addModal} animationType="slide" transparent>
         <View style={[shelterStyles.modalOverlay, { paddingBottom: insets.bottom }]}>
           <ScrollView style={shelterStyles.modalContent} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }} keyboardShouldPersistTaps="handled">
-            <Text style={shelterStyles.modalTitle}>{t('shelter.addTitle')}</Text>
+            <Text style={shelterStyles.modalTitle}>{editingId ? t('shelter.editTitle') : t('shelter.addTitle')}</Text>
+
+            {editingId && (
+              <>
+                <Text style={shelterStyles.fieldLabel}>{t('shelter.status')}</Text>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  {(['available', 'adopted'] as const).map((s) => (
+                    <TouchableOpacity
+                      key={s}
+                      style={[shelterStyles.statusChip, formStatus === s && shelterStyles.statusChipActive]}
+                      onPress={() => setFormStatus(s)}
+                    >
+                      <Text style={[shelterStyles.statusChipText, formStatus === s && shelterStyles.statusChipTextActive]}>
+                        {s === 'available' ? t('shelter.available') : t('shelter.adopted')}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
 
             <Text style={shelterStyles.fieldLabel}>{t('shelter.name')}</Text>
             <TextInput style={shelterStyles.input} value={formName} onChangeText={setFormName} placeholder={t('shelter.namePh')} />
@@ -855,6 +920,17 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
 
             <Text style={shelterStyles.fieldLabel}>{t('shelter.photos')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {existingImages.map((uri, i) => (
+                <View key={`e-${i}`} style={{ position: 'relative' }}>
+                  <Image source={{ uri }} style={{ width: 64, height: 64, borderRadius: 8 }} />
+                  <TouchableOpacity
+                    style={shelterStyles.mediaRemove}
+                    onPress={() => setExistingImages((prev) => prev.filter((_, j) => j !== i))}
+                  >
+                    <FontAwesome name="times" size={12} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ))}
               {formImages.map((uri, i) => (
                 <Image key={i} source={{ uri }} style={{ width: 64, height: 64, borderRadius: 8 }} />
               ))}
@@ -865,6 +941,17 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
 
             <Text style={shelterStyles.fieldLabel}>{t('shelter.videos')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {existingVideos.map((uri, i) => (
+                <View key={`ev-${i}`} style={{ position: 'relative', width: 64, height: 64, borderRadius: 8, backgroundColor: '#eceff3', justifyContent: 'center', alignItems: 'center' }}>
+                  <FontAwesome name="video-camera" size={20} color="#666" />
+                  <TouchableOpacity
+                    style={shelterStyles.mediaRemove}
+                    onPress={() => setExistingVideos((prev) => prev.filter((_, j) => j !== i))}
+                  >
+                    <FontAwesome name="times" size={12} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ))}
               {formVideos.map((uri, i) => (
                 <View key={i} style={{ width: 64, height: 64, borderRadius: 8, backgroundColor: '#eceff3', justifyContent: 'center', alignItems: 'center' }}>
                   <FontAwesome name="video-camera" size={20} color="#666" />
@@ -879,8 +966,8 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
               <TouchableOpacity style={shelterStyles.cancelBtn} onPress={() => { setAddModal(false); resetForm(); }}>
                 <Text style={shelterStyles.cancelBtnText}>{t('shelter.cancel')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={shelterStyles.submitBtn} onPress={handleAddCat} disabled={submitting}>
-                <Text style={shelterStyles.submitBtnText}>{submitting ? t('shelter.adding') : t('shelter.addPet')}</Text>
+              <TouchableOpacity style={shelterStyles.submitBtn} onPress={handleSaveCat} disabled={submitting}>
+                <Text style={shelterStyles.submitBtnText}>{submitting ? t('shelter.saving') : editingId ? t('shelter.saveChanges') : t('shelter.addPet')}</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -1014,6 +1101,41 @@ const shelterStyles = StyleSheet.create({
   },
   deleteBtn: {
     padding: 8,
+  },
+  editBtn: {
+    padding: 8,
+  },
+  mediaRemove: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#ff3b30',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statusChip: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  statusChipActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  statusChipText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#333',
+  },
+  statusChipTextActive: {
+    color: '#fff',
   },
   modalOverlay: {
     flex: 1,
