@@ -878,7 +878,8 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
 
       <Modal visible={addModal} animationType="slide" transparent>
         <View style={[shelterStyles.modalOverlay, { paddingBottom: insets.bottom }]}>
-          <ScrollView style={shelterStyles.modalContent} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }} keyboardShouldPersistTaps="handled">
+          <View style={shelterStyles.modalContent}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 16 }} keyboardShouldPersistTaps="handled">
             <Text style={shelterStyles.modalTitle}>{editingId ? t('shelter.editTitle') : t('shelter.addTitle')}</Text>
 
             {editingId && (
@@ -962,7 +963,8 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
               </TouchableOpacity>
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
+          </ScrollView>
+            <View style={shelterStyles.modalFooter}>
               <TouchableOpacity style={shelterStyles.cancelBtn} onPress={() => { setAddModal(false); resetForm(); }}>
                 <Text style={shelterStyles.cancelBtnText}>{t('shelter.cancel')}</Text>
               </TouchableOpacity>
@@ -970,7 +972,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
                 <Text style={shelterStyles.submitBtnText}>{submitting ? t('shelter.saving') : editingId ? t('shelter.saveChanges') : t('shelter.addPet')}</Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </View>
         </View>
       </Modal>
 
@@ -1202,6 +1204,14 @@ const shelterStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    backgroundColor: '#fff',
   },
   requestsBtn: {
     flexDirection: 'row',
