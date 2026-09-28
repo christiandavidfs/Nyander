@@ -5,6 +5,7 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 import type { Country } from '@/types';
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
 }
 
 export default function CountryPicker({ value, onChange }: Props) {
+  const { t } = useI18n();
   const [countries, setCountries] = useState<Country[]>([]);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ export default function CountryPicker({ value, onChange }: Props) {
     <>
       <TouchableOpacity style={styles.selector} onPress={() => setShow(true)}>
         <Text style={styles.selectorText}>
-          {selected ? `${selected.flag ?? ''} ${selected.name}` : 'Select country'}
+          {selected ? `${selected.flag ?? ''} ${selected.name}` : t('countryPicker.select')}
         </Text>
         <FontAwesome name="chevron-down" size={12} color={Colors.gray} />
       </TouchableOpacity>
@@ -46,7 +48,7 @@ export default function CountryPicker({ value, onChange }: Props) {
       <Modal visible={show} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.modal}>
-            <Text style={styles.title}>Select Country</Text>
+            <Text style={styles.title}>{t('countryPicker.title')}</Text>
             {loading ? (
               <ActivityIndicator color={Colors.primary} />
             ) : (

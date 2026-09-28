@@ -3,9 +3,11 @@ import { Tabs } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
+import { I18nProvider, useI18n } from '@/i18n';
 
-export default function TabLayout() {
+function TabLayoutInner() {
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
 
   return (
     <Tabs
@@ -39,44 +41,48 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Discover',
+          title: t('tabs.discover'),
           tabBarIcon: ({ color }) => <FontAwesome name="paw" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="cats"
         options={{
-          title: 'Pets',
+          title: t('tabs.pets'),
           tabBarIcon: ({ color }) => <FontAwesome name="heart" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="crossed"
         options={{
-          title: 'Crossed',
+          title: t('tabs.crossed'),
           tabBarIcon: ({ color }) => <FontAwesome name="map-marker" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="sponsors"
         options={{
-          title: 'Sponsors',
+          title: t('tabs.allies'),
           tabBarIcon: ({ color }) => <FontAwesome name="building" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
-          title: 'Messages',
+          title: t('tabs.messages'),
           tabBarIcon: ({ color }) => <FontAwesome name="envelope" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color }) => <FontAwesome name="user" size={22} color={color} />,
         }}
+      />
+      <Tabs.Screen
+        name="sponsorships"
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="messages/[id]"
@@ -111,5 +117,13 @@ export default function TabLayout() {
         options={{ href: null }}
       />
     </Tabs>
+  );
+}
+
+export default function TabLayout() {
+  return (
+    <I18nProvider>
+      <TabLayoutInner />
+    </I18nProvider>
   );
 }

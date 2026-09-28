@@ -6,8 +6,8 @@ Convertir ayuda en negocio. Stack: Expo 56 / TS 6 / React 19 / Expo Router / Sup
 
 ## Modelo de negocio (Givelify-inspired)
 - 2-tap giving, recurring 2.3x valor, text-to-give, campañas, analytics.
-- Fees: 10% platform (PLATFORM_FEE_PERCENT server/index.js) + sponsors $15/mo / $150/yr.
-- Sponsors: listado rankeado, click tracking, trial 14d, paywall por ranking.
+- Fees: 10% platform (PLATFORM_FEE_PERCENT server/index.js) + negocios $15/mo / $150/yr.
+- Dos productos separados: **Apadrinar** (adopter→gato recurring, `sponsorships`, botón en cards, `app/sponsorships.tsx` para gestionar) y **Aliados** (directorio B2B rankeado, click tracking, trial 14d).
 
 ## Priority List
 ### P0 — Crítico (bloquea negocio)

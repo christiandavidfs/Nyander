@@ -21,6 +21,7 @@ import { File } from 'expo-file-system';
 import { requestLocation } from '@/lib/location';
 import * as ImagePicker from 'expo-image-picker';
 import CountryPicker from '@/components/CountryPicker';
+import { useI18n, type Lang } from '@/i18n';
 
 export default function ProfileScreen() {
   const [session, setSession] = useState<Session | null>(null);
@@ -37,6 +38,7 @@ export default function ProfileScreen() {
   const [countryCode, setCountryCode] = useState<string | null>(null);
 
   const router = useRouter();
+  const { t, lang, setLang } = useI18n();
 
   useEffect(() => {
     let cancelled = false;
@@ -120,9 +122,9 @@ export default function ProfileScreen() {
         ...updates,
       } : null);
       setEditing(false);
-      Alert.alert('Saved', 'Profile updated successfully.');
+      Alert.alert(t('common.success'), t('profile.saved'));
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Alert.alert(t('common.error'), err.message);
     } finally {
       setSaving(false);
     }
@@ -182,7 +184,7 @@ export default function ProfileScreen() {
 
       setProfile((prev) => prev ? { ...prev, avatar_url: publicUrl } : null);
     } catch (err: any) {
-      Alert.alert('Upload error', err.message);
+      Alert.alert(t('profile.uploadError'), err.message);
     } finally {
       setUploading(false);
     }
@@ -203,9 +205,9 @@ export default function ProfileScreen() {
     return (
       <View style={styles.centered}>
         <FontAwesome name="user-circle" size={80} color={Colors.lightGray} />
-        <Text style={styles.notLoggedIn}>Not signed in</Text>
-        <Button title="Sign In" onPress={() => router.push('/login')} color={Colors.primary} />
-        <Button title="Sign Up" onPress={() => router.push('/register')} color={Colors.secondary} />
+        <Text style={styles.notLoggedIn}>{t('profile.notSignedIn')}</Text>
+        <Button title={t('profile.signIn')} onPress={() => router.push('/login')} color={Colors.primary} />
+        <Button title={t('profile.signUp')} onPress={() => router.push('/register')} color={Colors.secondary} />
       </View>
     );
   }
@@ -230,24 +232,24 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         <Text style={styles.name}>
-          {editing ? 'Edit Profile' : (profile?.display_name || session.user?.email)}
+          {editing ? t('profile.editProfile') : (profile?.display_name || session.user?.email)}
         </Text>
         <Text style={styles.email}>{session.user?.email}</Text>
 
         <View style={styles.scoreContainer}>
           <FontAwesome name="star" size={20} color={Colors.accent} />
-          <Text style={styles.score}>XP: {profile?.score ?? 0} • Lv {Math.floor((profile?.score ?? 0) / 200) + 1}</Text>
+          <Text style={styles.score}>{t('profile.xp')}: {profile?.score ?? 0} • {t('profile.level')} {Math.floor((profile?.score ?? 0) / 200) + 1}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {(profile?.score ?? 0) >= 5 && <View style={{ backgroundColor: '#eef2ff', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }}><Text style={{ fontSize: 11, fontWeight: '700', color: Colors.primary }}>🐾 First Like</Text></View>}
-          {(profile?.score ?? 0) >= 50 && <View style={{ backgroundColor: '#fef3c7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }}><Text style={{ fontSize: 11, fontWeight: '700', color: '#92400e' }}>❤️ Big Heart</Text></View>}
-          {(profile?.score ?? 0) >= 500 && <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }}><Text style={{ fontSize: 11, fontWeight: '700', color: '#065f46' }}>🏠 Home Giver</Text></View>}
-          {profile?.role === 'centro' && <View style={{ backgroundColor: '#fce7f3', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }}><Text style={{ fontSize: 11, fontWeight: '700', color: '#9d174d' }}>🏪 Shelter</Text></View>}
+          {(profile?.score ?? 0) >= 5 && <View style={{ backgroundColor: '#eef2ff', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }}><Text style={{ fontSize: 11, fontWeight: '700', color: Colors.primary }}>{t('profile.badgeFirstLike')}</Text></View>}
+          {(profile?.score ?? 0) >= 50 && <View style={{ backgroundColor: '#fef3c7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }}><Text style={{ fontSize: 11, fontWeight: '700', color: '#92400e' }}>{t('profile.badgeBigHeart')}</Text></View>}
+          {(profile?.score ?? 0) >= 500 && <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }}><Text style={{ fontSize: 11, fontWeight: '700', color: '#065f46' }}>{t('profile.badgeHomeGiver')}</Text></View>}
+          {profile?.role === 'centro' && <View style={{ backgroundColor: '#fce7f3', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }}><Text style={{ fontSize: 11, fontWeight: '700', color: '#9d174d' }}>{t('profile.badgeShelter')}</Text></View>}
         </View>
 
         <View style={styles.roleBadge}>
           <Text style={styles.roleText}>
-            {profile?.role === 'centro' ? '🏪 Shelter / Center' : profile?.role === 'sponsor' ? '💼 Sponsor (legacy)' : '👤 Adopter'}
+            {profile?.role === 'centro' ? t('profile.roleShelter') : profile?.role === 'sponsor' ? t('profile.roleSponsorLegacy') : t('profile.roleAdopter')}
           </Text>
         </View>
 
@@ -263,7 +265,7 @@ export default function ProfileScreen() {
         >
           <FontAwesome name={editing ? 'check' : 'pencil'} size={14} color={editing ? '#fff' : Colors.primary} />
           <Text style={[styles.editToggleText, editing && { color: '#fff' }]}>
-            {editing ? (saving ? 'Saving...' : 'Save') : 'Edit'}
+            {editing ? (saving ? t('profile.saving') : t('profile.save')) : t('profile.edit')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -271,18 +273,18 @@ export default function ProfileScreen() {
       {/* Editable fields */}
       {editing ? (
         <View style={styles.section}>
-          <Text style={styles.fieldLabel}>Display Name</Text>
-          <TextInput style={styles.input} value={displayName} onChangeText={setDisplayName} placeholder="Your name" />
+          <Text style={styles.fieldLabel}>{t('profile.displayName')}</Text>
+          <TextInput style={styles.input} value={displayName} onChangeText={setDisplayName} placeholder={t('profile.yourName')} />
 
-          <Text style={styles.fieldLabel}>Phone</Text>
+          <Text style={styles.fieldLabel}>{t('profile.phone')}</Text>
           <TextInput style={styles.input} value={phone} onChangeText={setPhone} placeholder="+48 000 000 000" keyboardType="phone-pad" />
 
-          <Text style={styles.fieldLabel}>Address</Text>
-          <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder="City, Street" />
+          <Text style={styles.fieldLabel}>{t('profile.address')}</Text>
+          <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder={t('profile.addressPh')} />
 
           {profile?.role === 'centro' && (
             <>
-              <Text style={styles.fieldLabel}>PayPal Email (for payouts)</Text>
+              <Text style={styles.fieldLabel}>{t('profile.paypalEmail')}</Text>
               <TextInput
                 style={styles.input}
                 value={paypalEmail}
@@ -293,14 +295,14 @@ export default function ProfileScreen() {
               />
             </>
           )}
-          <Text style={styles.fieldLabel}>Country</Text>
+          <Text style={styles.fieldLabel}>{t('profile.country')}</Text>
           <CountryPicker value={countryCode} onChange={setCountryCode} />
         </View>
       ) : (
         <>
           {/* Info display */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Contact Info</Text>
+            <Text style={styles.sectionTitle}>{t('profile.contactInfo')}</Text>
             {profile?.phone && (
               <View style={styles.infoRow}>
                 <FontAwesome name="phone" size={14} color={Colors.gray} />
@@ -314,13 +316,13 @@ export default function ProfileScreen() {
               </View>
             )}
             {!profile?.phone && !profile?.address && (
-              <Text style={styles.noData}>No contact info set.</Text>
+              <Text style={styles.noData}>{t('profile.noContact')}</Text>
             )}
           </View>
 
           {profile?.role === 'centro' && profile?.paypal_email && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Payment</Text>
+              <Text style={styles.sectionTitle}>{t('profile.payment')}</Text>
               <View style={styles.infoRow}>
                 <FontAwesome name="paypal" size={14} color="#0070ba" />
                 <Text style={styles.infoText}>{profile.paypal_email}</Text>
@@ -331,7 +333,31 @@ export default function ProfileScreen() {
       )}
 
       <View style={styles.actions}>
-        <Button title="Sign Out" onPress={handleSignOut} color={Colors.error} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('profile.language')}</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {(['es', 'en'] as Lang[]).map((l) => (
+              <TouchableOpacity
+                key={l}
+                style={[styles.langBtn, lang === l && styles.langBtnActive]}
+                onPress={() => setLang(l)}
+              >
+                <Text style={[styles.langBtnText, lang === l && styles.langBtnTextActive]}>
+                  {l === 'es' ? 'Español' : 'English'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        <TouchableOpacity style={styles.linkBtn} onPress={() => router.push('/sponsorships')}>
+          <FontAwesome name="heart" size={16} color={Colors.primary} />
+          <Text style={styles.linkBtnText}>{t('profile.mySponsorships')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.linkBtn} onPress={() => router.push('/manage-sponsor')}>
+          <FontAwesome name="building" size={16} color={Colors.primary} />
+          <Text style={styles.linkBtnText}>{t('profile.myBusiness')}</Text>
+        </TouchableOpacity>
+        <Button title={t('profile.signOut')} onPress={handleSignOut} color={Colors.error} />
       </View>
     </View>
   );
@@ -470,5 +496,43 @@ const styles = StyleSheet.create({
   },
   actions: {
     padding: 20,
+    gap: 12,
+  },
+  linkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.white,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  linkBtnText: {
+    color: Colors.primary,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  langBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+  },
+  langBtnActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  langBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.darkGray,
+  },
+  langBtnTextActive: {
+    color: '#fff',
   },
 });

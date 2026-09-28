@@ -13,6 +13,7 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { supabase } from '@/lib/supabase';
+import { useI18n } from '@/i18n';
 
 type Props = {
   catId: string
@@ -23,6 +24,7 @@ type Props = {
 const SPONSOR_AMOUNTS = [10, 20, 50]
 
 export default function SponsorButton({ catId, catName, shelterId }: Props) {
+  const { t } = useI18n();
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -32,7 +34,7 @@ export default function SponsorButton({ catId, catName, shelterId }: Props) {
       const { data: { session } } = await supabase.auth.getSession()
       const userId = session?.user?.id
       if (!userId) {
-        Alert.alert('Sign in required', 'Please sign in to sponsor a cat.')
+        Alert.alert(t('common.required'), t('sponsorBtn.signInRequired'))
         setLoading(false)
         setShowModal(false)
         return
@@ -45,7 +47,7 @@ export default function SponsorButton({ catId, catName, shelterId }: Props) {
       })
       const data = await res.json()
       if (data.mock) {
-        Alert.alert('Sponsorship active! (demo)', 'Thank you for sponsoring!')
+        Alert.alert(t('sponsorBtn.demoSuccess'), t('sponsorBtn.demoThanks'))
         return
       }
       if (data.approval_url) {
@@ -59,8 +61,8 @@ export default function SponsorButton({ catId, catName, shelterId }: Props) {
       }
     } catch (err: any) {
       console.error('Sponsorship error:', err)
-      const msg = err?.message?.includes('Failed to fetch') ? 'Payment server not reachable. For demo users (*.demo@nyander.app) payments are mocked — ensure server is running.' : 'Something went wrong. Please try again.'
-      Alert.alert('Error', msg)
+      const msg = err?.message?.includes('Failed to fetch') ? t('sponsorBtn.serverUnreachable') : t('sponsorBtn.genericError')
+      Alert.alert(t('common.error'), msg)
     } finally {
       setLoading(false)
       setShowModal(false)
@@ -74,14 +76,14 @@ export default function SponsorButton({ catId, catName, shelterId }: Props) {
         onPress={() => setShowModal(true)}
       >
         <FontAwesome name="heart" size={14} color="#fff" />
-        <Text style={styles.label}>Sponsor {catName}</Text>
+        <Text style={styles.label} numberOfLines={1}>{t('sponsorBtn.button')}</Text>
       </TouchableOpacity>
 
       <Modal visible={showModal} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.modal}>
-            <Text style={styles.title}>Sponsor {catName}</Text>
-            <Text style={styles.subtitle}>Monthly amount (EUR)</Text>
+            <Text style={styles.title}>{t('sponsorBtn.title', { name: catName })}</Text>
+            <Text style={styles.subtitle}>{t('sponsorBtn.sub')}</Text>
 
             <View style={styles.amounts}>
               {SPONSOR_AMOUNTS.map((a) => (
@@ -104,7 +106,7 @@ export default function SponsorButton({ catId, catName, shelterId }: Props) {
               style={styles.cancelBtn}
               onPress={() => setShowModal(false)}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t('sponsorBtn.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -117,16 +119,22 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
     backgroundColor: '#007aff',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 140,
+    minWidth: 0,
   },
   label: {
     color: '#fff',
     fontSize: 13,
     fontWeight: '700',
+    flexShrink: 1,
   },
   overlay: {
     flex: 1,

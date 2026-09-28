@@ -2,8 +2,10 @@ import { View, Text, StyleSheet, TextInput, Button, Alert, ActivityIndicator } f
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
+import { useI18n } from '@/i18n';
 
 export default function LoginScreen() {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -11,7 +13,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('login.fillFields'));
       return;
     }
 
@@ -28,7 +30,7 @@ export default function LoginScreen() {
 
       router.replace('/');
     } catch (err: any) {
-      Alert.alert('Login failed', err.message);
+      Alert.alert(t('login.loginFailed'), err.message);
     } finally {
       setLoading(false);
     }
@@ -43,7 +45,7 @@ export default function LoginScreen() {
 
       if (error) throw error;
     } catch (err: any) {
-      Alert.alert('Google sign in failed', err.message);
+      Alert.alert(t('login.googleFailed'), err.message);
     } finally {
       setLoading(false);
     }
@@ -52,12 +54,12 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Nyander</Text>
-      <Text style={styles.subtitle}>Find your perfect feline friend</Text>
+      <Text style={styles.subtitle}>{t('login.tagline')}</Text>
 
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={t('login.email')}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -65,7 +67,7 @@ export default function LoginScreen() {
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={t('login.password')}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -73,7 +75,7 @@ export default function LoginScreen() {
       </View>
 
       <Button
-        title="Sign In"
+        title={t('login.signIn')}
         onPress={handleLogin}
         disabled={loading}
         color="#ff6b6b"
@@ -81,12 +83,12 @@ export default function LoginScreen() {
 
       <View style={styles.divider}>
         <View style={styles.line} />
-        <Text style={styles.dividerText}>OR</Text>
+        <Text style={styles.dividerText}>{t('login.or')}</Text>
         <View style={styles.line} />
       </View>
 
       <Button
-        title="Continue with Google"
+        title={t('login.google')}
         onPress={handleGoogleSignIn}
         disabled={loading}
         color="#4285F4"
@@ -94,7 +96,7 @@ export default function LoginScreen() {
 
       <View style={styles.links}>
         <Text style={styles.link} onPress={() => router.push('/register')}>
-          Don't have an account? Sign up
+          {t('login.noAccount')}
         </Text>
       </View>
 

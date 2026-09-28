@@ -10,7 +10,8 @@
       "expo-router",
       "expo-video",
       "expo-sharing",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-localization"
     ],
     "ios": {
       "supportsTablet": true

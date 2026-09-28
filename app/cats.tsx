@@ -15,6 +15,7 @@ import { File } from 'expo-file-system';
 import { haversineDistance, requestLocation } from '@/lib/location';
 import StaticMap from '@/components/StaticMap';
 import * as ImagePicker from 'expo-image-picker';
+import { useI18n } from '@/i18n';
 
 const PASSED_IDS_KEY = 'nyander_passed_cat_ids';
 
@@ -22,11 +23,11 @@ const { width } = Dimensions.get('window');
 const swipeThreshold = Math.min(width * 0.25, 120);
 const flyAwayDistance = width + 160;
 
-const distanceLabel = (km: number | null | undefined): string => {
-  if (km == null) return 'Distance unknown';
-  if (km < 1) return 'Less than 1 km away';
-  if (km === 1) return '1 km away';
-  return `${Math.round(km)} km away`;
+const distanceLabel = (km: number | null | undefined, t: (k: string, p?: any) => string): string => {
+  if (km == null) return t('cats.distanceUnknown');
+  if (km < 1) return t('cats.lessThan1km');
+  if (km === 1) return t('cats.kmAway', { n: 1 });
+  return t('cats.kmAway', { n: Math.round(km) });
 };
 
 const toCat = (item: Record<string, unknown>): Cat => ({
@@ -51,6 +52,7 @@ const toCat = (item: Record<string, unknown>): Cat => ({
 
 export default function CatDeckScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<any>(null);
@@ -361,14 +363,14 @@ export default function CatDeckScreen() {
           <View style={styles.titleBlock}>
             <Text style={styles.name}>{cat.name}</Text>
             <Text style={styles.meta}>
-              {cat.age ?? 'Age unknown'} • {cat.breed ?? 'Mixed breed'}
+              {cat.age ?? t('cats.ageUnknown')} • {cat.breed ?? t('cats.mixedBreed')}
             </Text>
           </View>
         </View>
 
         <View style={styles.detailRow}>
           <FontAwesome name="map-marker" size={14} color="#666" />
-          <Text style={styles.detailText}>{distanceLabel(cat.distance_km)} • {cat.location}</Text>
+          <Text style={styles.detailText}>{distanceLabel(cat.distance_km, t)} • {cat.location}</Text>
         </View>
 
         <View style={styles.badgeRow}>
@@ -394,13 +396,13 @@ export default function CatDeckScreen() {
           style={styles.viewDetails}
           onPress={() => router.push(`/cat/${cat.id}`)}
         >
-          <Text style={styles.viewDetailsText}>View full profile</Text>
+          <Text style={styles.viewDetailsText}>{t('cats.viewFull')}</Text>
           <FontAwesome name="chevron-right" size={12} color={Colors.primary} />
         </TouchableOpacity>
 
         <View style={styles.likesRow}>
           <FontAwesome name="heart" size={14} color="#ff3b30" />
-          <Text style={styles.likesText}>{cat.likes} people interested</Text>
+          <Text style={styles.likesText}>{t('cats.peopleInterested', { n: cat.likes })}</Text>
         </View>
       </View>
     </View>
@@ -414,22 +416,22 @@ export default function CatDeckScreen() {
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       {loading ? (
         <View style={styles.centered}>
-          <Text style={styles.loadingText}>Loading cats...</Text>
+          <Text style={styles.loadingText}>{t('cats.loadingCats')}</Text>
         </View>
       ) : (
         <>
           {!isSupabaseConfigured && (
             <View style={styles.demoBanner}>
               <Text style={styles.demoBannerText}>
-                Demo mode: configure Supabase env vars to load real pets.
+                {t('cats.demoBanner')}
               </Text>
             </View>
           )}
 
           <View style={styles.header}>
             <View>
-              <Text style={styles.heading}>Matches nearby</Text>
-              <Text style={styles.subheading}>Swipe to like or pass</Text>
+              <Text style={styles.heading}>{t('cats.title')}</Text>
+              <Text style={styles.subheading}>{t('cats.subtitle')}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <TouchableOpacity onPress={() => setShowMap(!showMap)}>
@@ -443,7 +445,7 @@ export default function CatDeckScreen() {
 
           <View style={styles.searchRow}>
             <FontAwesome name="search" size={14} color={Colors.gray} />
-            <TextInput placeholder="Search breed, name..." value={search} onChangeText={setSearch} style={styles.searchInput} placeholderTextColor={Colors.gray} />
+            <TextInput placeholder={t('cats.search')} value={search} onChangeText={setSearch} style={styles.searchInput} placeholderTextColor={Colors.gray} />
             {search.length > 0 && <TouchableOpacity onPress={() => setSearch('')}><FontAwesome name="times-circle" size={16} color={Colors.gray} /></TouchableOpacity>}
           </View>
           <View style={styles.filterRow}>
@@ -468,7 +470,7 @@ export default function CatDeckScreen() {
                   </Text>
                 </TouchableOpacity>
               ))}
-              <Text style={styles.filterLabel}>km</Text>
+              <Text style={styles.filterLabel}>{t('cats.km')}</Text>
             </View>
           )}
 
@@ -492,10 +494,10 @@ export default function CatDeckScreen() {
             ) : (
               <View style={styles.doneState}>
                 <FontAwesome name="search" size={54} color="#0066ff" />
-                <Text style={styles.doneTitle}>No more cats nearby</Text>
-                <Text style={styles.doneText}>Check back soon or adjust your search area.</Text>
+                <Text style={styles.doneTitle}>{t('cats.noMore')}</Text>
+                <Text style={styles.doneText}>{t('cats.noMoreSub')}</Text>
                 <Pressable style={styles.resetButton} onPress={resetDeck}>
-                  <Text style={styles.resetButtonText}>Reload matches</Text>
+                  <Text style={styles.resetButtonText}>{t('cats.reload')}</Text>
                 </Pressable>
               </View>
             )}
@@ -527,6 +529,7 @@ export default function CatDeckScreen() {
 
 function ShelterDashboard({ profile }: { profile: UserProfile }) {
   const router = useRouter();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const [myCats, setMyCats] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -577,8 +580,8 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
           const { data: user } = await supabase.from('profiles').select('display_name, phone').eq('id', r.user_id).single();
           return {
             ...r,
-            cat_name: (cat as any)?.name ?? 'Unknown cat',
-            user_name: (user as any)?.display_name ?? 'Unknown user',
+            cat_name: (cat as any)?.name ?? t('common.unknownCat'),
+            user_name: (user as any)?.display_name ?? t('common.unknownUser'),
             user_phone: (user as any)?.phone ?? null,
           };
         })
@@ -644,7 +647,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
   };
 
   const handleAddCat = async () => {
-    if (!formName.trim()) { Alert.alert('Required', 'Name is required.'); return; }
+    if (!formName.trim()) { Alert.alert(t('common.required'), t('shelter.nameRequired')); return; }
     setSubmitting(true);
     try {
       let imageUrls: string[] = [];
@@ -752,19 +755,19 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.heading}>My Cats</Text>
-          <Text style={styles.subheading}>{myCats.length} cats registered</Text>
+          <Text style={styles.heading}>{t('shelter.myCats')}</Text>
+          <Text style={styles.subheading}>{t('shelter.catsRegistered', { n: myCats.length })}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {isSupabaseConfigured && (
             <TouchableOpacity style={shelterStyles.requestsBtn} onPress={() => { loadRequests(); setShowRequests(true); }}>
               <FontAwesome name="clipboard" size={14} color={Colors.primary} />
-              <Text style={shelterStyles.requestsBtnText}>Requests</Text>
+              <Text style={shelterStyles.requestsBtnText}>{t('shelter.requests')}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity style={styles.addButton} onPress={() => setAddModal(true)}>
             <FontAwesome name="plus" size={16} color="#fff" />
-            <Text style={styles.addButtonText}>Add Pet</Text>
+            <Text style={styles.addButtonText}>{t('shelter.addPet')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -772,8 +775,8 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
       {myCats.length === 0 ? (
         <View style={styles.doneState}>
           <FontAwesome name="paw" size={54} color="#ccc" />
-          <Text style={styles.doneTitle}>No cats yet</Text>
-          <Text style={styles.doneText}>Add your first cat to start finding adopters.</Text>
+          <Text style={styles.doneTitle}>{t('shelter.noCats')}</Text>
+          <Text style={styles.doneText}>{t('shelter.noCatsSub')}</Text>
         </View>
       ) : (
         <FlatList
@@ -795,7 +798,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
               <View style={shelterStyles.catInfo}>
                 <Text style={shelterStyles.catName}>{item.name}</Text>
                 <Text style={shelterStyles.catMeta}>
-                  {item.age ?? 'Unknown'} • {item.breed ?? 'Mixed'}
+                  {item.age ?? t('shelter.unknown')} • {item.breed ?? t('shelter.mixed')}
                 </Text>
                 <View style={shelterStyles.badgeRow}>
                   <View style={[shelterStyles.statusBadge, {
@@ -814,9 +817,9 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
               <TouchableOpacity
                 style={shelterStyles.deleteBtn}
                 onPress={() => {
-                  Alert.alert('Delete Cat', `Remove ${item.name}?`, [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Delete', style: 'destructive', onPress: () => handleDeleteCat(item.id) },
+                  Alert.alert(t('shelter.deleteTitle'), t('shelter.deleteMsg', { name: item.name }), [
+                    { text: t('shelter.cancel'), style: 'cancel' },
+                    { text: t('shelter.delete'), style: 'destructive', onPress: () => handleDeleteCat(item.id) },
                   ]);
                 }}
               >
@@ -830,27 +833,27 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
       <Modal visible={addModal} animationType="slide" transparent>
         <View style={[shelterStyles.modalOverlay, { paddingBottom: insets.bottom }]}>
           <ScrollView style={shelterStyles.modalContent} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }} keyboardShouldPersistTaps="handled">
-            <Text style={shelterStyles.modalTitle}>Add New Pet</Text>
+            <Text style={shelterStyles.modalTitle}>{t('shelter.addTitle')}</Text>
 
-            <Text style={shelterStyles.fieldLabel}>Name *</Text>
-            <TextInput style={shelterStyles.input} value={formName} onChangeText={setFormName} placeholder="Pet's name" />
+            <Text style={shelterStyles.fieldLabel}>{t('shelter.name')}</Text>
+            <TextInput style={shelterStyles.input} value={formName} onChangeText={setFormName} placeholder={t('shelter.namePh')} />
 
-            <Text style={shelterStyles.fieldLabel}>Age</Text>
-            <TextInput style={shelterStyles.input} value={formAge} onChangeText={setFormAge} placeholder="e.g. 2 years" />
+            <Text style={shelterStyles.fieldLabel}>{t('shelter.age')}</Text>
+            <TextInput style={shelterStyles.input} value={formAge} onChangeText={setFormAge} placeholder={t('shelter.agePh')} />
 
-            <Text style={shelterStyles.fieldLabel}>Breed</Text>
-            <TextInput style={shelterStyles.input} value={formBreed} onChangeText={setFormBreed} placeholder="e.g. Siamese" />
+            <Text style={shelterStyles.fieldLabel}>{t('shelter.breed')}</Text>
+            <TextInput style={shelterStyles.input} value={formBreed} onChangeText={setFormBreed} placeholder={t('shelter.breedPh')} />
 
-            <Text style={shelterStyles.fieldLabel}>Health Status</Text>
-            <TextInput style={shelterStyles.input} value={formHealth} onChangeText={setFormHealth} placeholder="e.g. Vaccinated, neutered" />
+            <Text style={shelterStyles.fieldLabel}>{t('shelter.health')}</Text>
+            <TextInput style={shelterStyles.input} value={formHealth} onChangeText={setFormHealth} placeholder={t('shelter.healthPh')} />
 
-            <Text style={shelterStyles.fieldLabel}>Location</Text>
-            <TextInput style={shelterStyles.input} value={formLocation} onChangeText={setFormLocation} placeholder="City, area" />
+            <Text style={shelterStyles.fieldLabel}>{t('shelter.location')}</Text>
+            <TextInput style={shelterStyles.input} value={formLocation} onChangeText={setFormLocation} placeholder={t('shelter.locationPh')} />
 
-            <Text style={shelterStyles.fieldLabel}>Description</Text>
-            <TextInput style={[shelterStyles.input, { height: 80 }]} value={formDescription} onChangeText={setFormDescription} placeholder="Tell us about the pet..." multiline />
+            <Text style={shelterStyles.fieldLabel}>{t('shelter.description')}</Text>
+            <TextInput style={[shelterStyles.input, { height: 80 }]} value={formDescription} onChangeText={setFormDescription} placeholder={t('shelter.descriptionPh')} multiline />
 
-            <Text style={shelterStyles.fieldLabel}>Photos</Text>
+            <Text style={shelterStyles.fieldLabel}>{t('shelter.photos')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {formImages.map((uri, i) => (
                 <Image key={i} source={{ uri }} style={{ width: 64, height: 64, borderRadius: 8 }} />
@@ -860,7 +863,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
               </TouchableOpacity>
             </View>
 
-            <Text style={shelterStyles.fieldLabel}>Videos</Text>
+            <Text style={shelterStyles.fieldLabel}>{t('shelter.videos')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {formVideos.map((uri, i) => (
                 <View key={i} style={{ width: 64, height: 64, borderRadius: 8, backgroundColor: '#eceff3', justifyContent: 'center', alignItems: 'center' }}>
@@ -874,10 +877,10 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
 
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
               <TouchableOpacity style={shelterStyles.cancelBtn} onPress={() => { setAddModal(false); resetForm(); }}>
-                <Text style={shelterStyles.cancelBtnText}>Cancel</Text>
+                <Text style={shelterStyles.cancelBtnText}>{t('shelter.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={shelterStyles.submitBtn} onPress={handleAddCat} disabled={submitting}>
-                <Text style={shelterStyles.submitBtnText}>{submitting ? 'Adding...' : 'Add Pet'}</Text>
+                <Text style={shelterStyles.submitBtnText}>{submitting ? t('shelter.adding') : t('shelter.addPet')}</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -888,7 +891,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
         <View style={[shelterStyles.modalOverlay, { paddingBottom: insets.bottom }]}>
           <ScrollView style={shelterStyles.modalContent} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <Text style={shelterStyles.modalTitle}>Adoption Requests</Text>
+              <Text style={shelterStyles.modalTitle}>{t('shelter.requestsTitle')}</Text>
               <TouchableOpacity onPress={() => setShowRequests(false)}>
                 <FontAwesome name="times" size={20} color="#666" />
               </TouchableOpacity>
@@ -897,7 +900,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
             {requests.length === 0 ? (
               <View style={{ alignItems: 'center', paddingVertical: 40 }}>
                 <FontAwesome name="inbox" size={48} color="#ccc" />
-                <Text style={{ marginTop: 12, color: '#999', fontSize: 15 }}>No requests yet</Text>
+                <Text style={{ marginTop: 12, color: '#999', fontSize: 15 }}>{t('shelter.noRequests')}</Text>
               </View>
             ) : (
               requests.map((req) => (
@@ -926,14 +929,14 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
                         onPress={() => handleRequestAction(req.id, 'approved')}
                       >
                         <FontAwesome name="check" size={12} color="#fff" />
-                        <Text style={shelterStyles.reqActionText}>Approve</Text>
+                        <Text style={shelterStyles.reqActionText}>{t('shelter.approve')}</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={[shelterStyles.reqActionBtn, { backgroundColor: '#ff3b30' }]}
                         onPress={() => handleRequestAction(req.id, 'rejected')}
                       >
                         <FontAwesome name="times" size={12} color="#fff" />
-                        <Text style={shelterStyles.reqActionText}>Reject</Text>
+                        <Text style={shelterStyles.reqActionText}>{t('shelter.reject')}</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -1395,7 +1398,8 @@ const styles = StyleSheet.create({
   },
   monetizationBar: {
     flexDirection: 'row',
-    gap: 12,
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 14,
   },
   viewDetails: {

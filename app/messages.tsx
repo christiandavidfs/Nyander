@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 import type { Conversation, Message } from '@/types';
 
 type EnrichedConversation = Conversation & {
@@ -15,6 +16,7 @@ type EnrichedConversation = Conversation & {
 
 export default function MessagesScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [conversations, setConversations] = useState<EnrichedConversation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,8 +50,8 @@ export default function MessagesScreen() {
             ]);
             return {
               ...conv,
-              cat_name: (cat as any)?.name ?? 'Unknown cat',
-              other_name: (other as any)?.display_name || (other as any)?.email || 'Unknown user',
+              cat_name: (cat as any)?.name ?? t('common.unknownCat'),
+              other_name: (other as any)?.display_name || (other as any)?.email || t('common.unknownUser'),
               other_avatar: (other as any)?.avatar_url ?? null,
               last_message: (lastMsg as Message)?.content ?? null,
             } as EnrichedConversation;
@@ -79,7 +81,7 @@ export default function MessagesScreen() {
     return (
       <View style={styles.centered}>
         <FontAwesome name="comments" size={64} color={Colors.lightGray} />
-        <Text style={styles.emptyText}>Configure Supabase to use messages.</Text>
+        <Text style={styles.emptyText}>{t('messages.configNeeded')}</Text>
       </View>
     );
   }
@@ -87,13 +89,13 @@ export default function MessagesScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.heading}>Messages</Text>
+        <Text style={styles.heading}>{t('messages.title')}</Text>
       </View>
       {conversations.length === 0 ? (
         <View style={styles.centered}>
           <FontAwesome name="comments" size={64} color={Colors.lightGray} />
-          <Text style={styles.emptyTitle}>No conversations yet</Text>
-          <Text style={styles.emptyText}>Start by contacting a shelter from a cat's profile.</Text>
+          <Text style={styles.emptyTitle}>{t('messages.empty')}</Text>
+          <Text style={styles.emptyText}>{t('messages.emptySub')}</Text>
         </View>
       ) : (
         <FlatList
@@ -120,7 +122,7 @@ export default function MessagesScreen() {
                 {item.last_message ? (
                   <Text style={styles.lastMessage} numberOfLines={1}>{item.last_message}</Text>
                 ) : (
-                  <Text style={styles.lastMessageEmpty}>No messages yet</Text>
+                  <Text style={styles.lastMessageEmpty}>{t('messages.noMessages')}</Text>
                 )}
               </View>
               <FontAwesome name="chevron-right" size={14} color={Colors.gray} />

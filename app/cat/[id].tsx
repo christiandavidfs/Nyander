@@ -21,6 +21,7 @@ import type { Cat } from '@/types';
 import DonateButton from '@/components/DonateButton';
 import SponsorButton from '@/components/SponsorButton';
 import VideoPlayer from '@/components/VideoPlayer';
+import { useI18n } from '@/i18n';
 
 const { width } = Dimensions.get('window');
 
@@ -50,6 +51,7 @@ export default function CatDetailScreen() {
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeMedia, setActiveMedia] = useState(0);
+  const { t } = useI18n();
 
   const mediaItems = useMemo(() => {
     if (!cat) return [];
@@ -100,7 +102,7 @@ export default function CatDetailScreen() {
     return (
       <View style={styles.centered}>
         <FontAwesome name="paw" size={64} color={Colors.lightGray} />
-        <Text style={{ marginTop: 12, color: Colors.gray }}>Cat not found</Text>
+        <Text style={{ marginTop: 12, color: Colors.gray }}>{t('catDetail.notFound')}</Text>
       </View>
     );
   }
@@ -160,12 +162,12 @@ export default function CatDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.name}>{cat.name}</Text>
           <Text style={styles.meta}>
-            {cat.age ?? 'Age unknown'} • {cat.breed ?? 'Mixed breed'}
+            {cat.age ?? t('catDetail.ageUnknown')} • {cat.breed ?? t('catDetail.mixedBreed')}
           </Text>
 
           <View style={styles.infoRow}>
             <FontAwesome name="map-marker" size={14} color={Colors.gray} />
-            <Text style={styles.infoText}>{cat.location ?? 'Location unknown'}</Text>
+            <Text style={styles.infoText}>{cat.location ?? t('catDetail.locationUnknown')}</Text>
           </View>
 
           {cat.health_status && (
@@ -177,7 +179,7 @@ export default function CatDetailScreen() {
 
           <View style={styles.likesRow}>
             <FontAwesome name="heart" size={16} color="#ff3b30" />
-            <Text style={styles.likesText}>{cat.likes} people interested</Text>
+            <Text style={styles.likesText}>{t('catDetail.peopleInterested', { n: cat.likes })}</Text>
           </View>
           {cat.temperament && Object.keys(cat.temperament).length > 0 && (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
@@ -192,24 +194,24 @@ export default function CatDetailScreen() {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About {cat.name}</Text>
-          <Text style={styles.description}>{cat.description ?? 'No description available.'}</Text>
+          <Text style={styles.sectionTitle}>{t('catDetail.about', { name: cat.name })}</Text>
+          <Text style={styles.description}>{cat.description ?? t('catDetail.noDescription')}</Text>
         </View>
 
         {/* Actions */}
         {cat.status === 'available' && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Support {cat.name}</Text>
+            <Text style={styles.sectionTitle}>{t('catDetail.support', { name: cat.name })}</Text>
             <View style={styles.buttonRow}>
               <DonateButton catId={cat.id} catName={cat.name} shelterId={cat.shelter_id} />
               <SponsorButton catId={cat.id} catName={cat.name} shelterId={cat.shelter_id} />
             </View>
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, alignSelf: 'center' }} onPress={async () => {
               const link = `https://nyander.app/c/${cat.id}`;
-              try { if (Platform.OS === 'web') { await navigator.clipboard.writeText(link); Alert.alert('Link copied', link); } else { const Sharing = await import('expo-sharing'); if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(link as any); else Alert.alert('Share', link); } } catch { Alert.alert('Share link', link); }
+              try { if (Platform.OS === 'web') { await navigator.clipboard.writeText(link); Alert.alert(t('catDetail.linkCopied'), link); } else { const Sharing = await import('expo-sharing'); if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(link as any); else Alert.alert(t('catDetail.shareLink'), link); } } catch { Alert.alert(t('catDetail.shareLink'), link); }
             }}>
               <FontAwesome name="qrcode" size={16} color={Colors.primary} />
-              <Text style={{ color: Colors.primary, fontWeight: '700' }}>Share / QR nyander.app/c/{cat.id.slice(0,8)}</Text>
+              <Text style={{ color: Colors.primary, fontWeight: '700' }}>{t('catDetail.shareQr')} nyander.app/c/{cat.id.slice(0,8)}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -223,7 +225,7 @@ export default function CatDetailScreen() {
                 onPress={async () => {
                   const { data: { session } } = await supabase.auth.getSession();
                   if (!session) {
-                    Alert.alert('Sign in required', 'Please sign in to request adoption.');
+                    Alert.alert(t('catDetail.signInRequired'), t('catDetail.signInToAdopt'));
                     router.push('/login');
                     return;
                   }
@@ -236,12 +238,12 @@ export default function CatDetailScreen() {
                   if (error) {
                     Alert.alert('Error', error.message);
                   } else {
-                    Alert.alert('Request sent', 'The shelter will review your request.');
+                    Alert.alert(t('common.success'), t('catDetail.requestSent'));
                   }
                 }}
               >
                 <FontAwesome name="handshake-o" size={18} color="#fff" />
-                <Text style={styles.adoptButtonText}>Request Adoption</Text>
+                <Text style={styles.adoptButtonText}>{t('catDetail.requestAdoption')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -249,12 +251,12 @@ export default function CatDetailScreen() {
                 onPress={async () => {
                   const { data: { session } } = await supabase.auth.getSession();
                   if (!session) {
-                    Alert.alert('Sign in required', 'Please sign in to contact the shelter.');
+                    Alert.alert(t('catDetail.signInRequired'), t('catDetail.signInToContact'));
                     router.push('/login');
                     return;
                   }
                   if (session.user.id === cat.shelter_id) {
-                    Alert.alert('Your cat', 'This is your own cat listing.');
+                    Alert.alert(t('common.cat'), t('catDetail.yourCat'));
                     return;
                   }
 
@@ -289,7 +291,7 @@ export default function CatDetailScreen() {
                 }}
               >
                 <FontAwesome name="envelope" size={18} color={Colors.primary} />
-                <Text style={styles.contactButtonText}>Contact Shelter</Text>
+                <Text style={styles.contactButtonText}>{t('catDetail.contactShelter')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -427,7 +429,8 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 12,
+    flexWrap: 'wrap',
+    gap: 8,
   },
   contactButton: {
     flexDirection: 'row',

@@ -6,11 +6,13 @@ import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 import type { Sponsor } from '@/types';
 
 export default function SponsorDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useI18n();
   const [sponsor, setSponsor] = useState<Sponsor | null>(null);
   const [clickCount, setClickCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -20,8 +22,9 @@ export default function SponsorDetailScreen() {
     if (!isSupabaseConfigured || !id) { setLoading(false); return; }
 
     const load = async () => {
+      try {
       const [{ data }, { data: { session } }] = await Promise.all([
-        supabase.from('sponsors').select('*').eq('id', id).single(),
+        supabase.from('sponsors').select('*').eq('id', id).maybeSingle(),
         supabase.auth.getSession(),
       ]);
       if (data) {
@@ -35,7 +38,11 @@ export default function SponsorDetailScreen() {
           .eq('sponsor_id', id);
         setClickCount(count ?? 0);
       }
-      setLoading(false);
+      } catch (err) {
+        console.error('Error loading sponsor:', err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     load();
@@ -59,7 +66,7 @@ export default function SponsorDetailScreen() {
     return (
       <View style={styles.centered}>
         <FontAwesome name="building" size={64} color={Colors.lightGray} />
-        <Text style={styles.emptyText}>Sponsor not found.</Text>
+        <Text style={styles.emptyText}>{t('sponsorDetail.notFound')}</Text>
       </View>
     );
   }
@@ -88,32 +95,32 @@ export default function SponsorDetailScreen() {
         <View style={styles.statBox}>
           <FontAwesome name="mouse-pointer" size={16} color={Colors.primary} />
           <Text style={styles.statValue}>{clickCount}</Text>
-          <Text style={styles.statLabel}>Clicks</Text>
+          <Text style={styles.statLabel}>{t('sponsorDetail.clicks')}</Text>
         </View>
         {sponsor.plan && (
           <View style={styles.statBox}>
             <FontAwesome name={sponsor.plan === 'trial' ? 'flask' : 'credit-card'} size={16} color={Colors.secondary} />
-            <Text style={styles.statValue}>{sponsor.plan === 'trial' ? 'Trial' : sponsor.plan === 'yearly' ? '$150/yr' : '$15/mo'}</Text>
-            <Text style={styles.statLabel}>Plan</Text>
+            <Text style={styles.statValue}>{sponsor.plan === 'trial' ? t('sponsorDetail.trial') : sponsor.plan === 'yearly' ? '$150/yr' : '$15/mo'}</Text>
+            <Text style={styles.statLabel}>{t('sponsorDetail.plan')}</Text>
           </View>
         )}
         <View style={styles.statBox}>
           <FontAwesome name="star" size={16} color={Colors.accent} />
           <Text style={styles.statValue}>{sponsor.ranking}</Text>
-          <Text style={styles.statLabel}>Ranking</Text>
+          <Text style={styles.statLabel}>{t('sponsorDetail.ranking')}</Text>
         </View>
       </View>
 
       {sponsor.description && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.sectionTitle}>{t('sponsorDetail.about')}</Text>
           <Text style={styles.description}>{sponsor.description}</Text>
         </View>
       )}
 
       {(sponsor.website_url || sponsor.phone || sponsor.address || sponsor.email) && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact & Info</Text>
+          <Text style={styles.sectionTitle}>{t('sponsorDetail.contactInfo')}</Text>
           {sponsor.website_url && (
             <TouchableOpacity style={styles.infoRow} onPress={trackAndOpen}>
               <FontAwesome name="globe" size={16} color={Colors.primary} />
@@ -144,14 +151,14 @@ export default function SponsorDetailScreen() {
       {sponsor.website_url && (
         <TouchableOpacity style={styles.visitButton} onPress={trackAndOpen}>
           <FontAwesome name="external-link" size={16} color="#fff" />
-          <Text style={styles.visitButtonText}>Visit Website</Text>
+          <Text style={styles.visitButtonText}>{t('sponsorDetail.visitWebsite')}</Text>
         </TouchableOpacity>
       )}
 
       {isOwner && (
         <TouchableOpacity style={styles.manageButton} onPress={() => router.push('/manage-sponsor')}>
           <FontAwesome name="cog" size={16} color={Colors.primary} />
-          <Text style={styles.manageButtonText}>Manage Listing</Text>
+          <Text style={styles.manageButtonText}>{t('sponsorDetail.manageListing')}</Text>
         </TouchableOpacity>
       )}
     </ScrollView>

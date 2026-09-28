@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 
 type Props = {
   catId: string
@@ -22,6 +23,7 @@ type Props = {
 const DONATION_AMOUNTS = [5, 10, 25, 50]
 
 export default function DonateButton({ catId, catName, shelterId }: Props) {
+  const { t } = useI18n();
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
   const [isMonthly, setIsMonthly] = useState(false)
@@ -32,7 +34,7 @@ export default function DonateButton({ catId, catName, shelterId }: Props) {
       const { supabase } = await import('@/lib/supabase')
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user?.id) {
-        Alert.alert('Sign in required', 'Please sign in to donate.')
+        Alert.alert(t('common.required'), t('donate.signInRequired'))
         return
       }
       const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001'
@@ -44,7 +46,7 @@ export default function DonateButton({ catId, catName, shelterId }: Props) {
       })
       const data = await res.json()
       if (data.mock) {
-        Alert.alert(isMonthly ? 'Monthly sponsorship active! (demo)' : 'Donation successful! (demo)', 'Thank you for your support.')
+        Alert.alert(isMonthly ? t('donate.demoMonthly') : t('donate.demoOne'), t('donate.thanks'))
         return
       }
       if (data.approval_url) {
@@ -58,8 +60,8 @@ export default function DonateButton({ catId, catName, shelterId }: Props) {
       }
     } catch (err: any) {
       console.error('Donation error:', err)
-      const msg = err?.message?.includes('Failed to fetch') ? 'Payment server not reachable. For demo users (*.demo@nyander.app) payments are mocked.' : 'Something went wrong. Please try again.'
-      Alert.alert('Error', msg)
+      const msg = err?.message?.includes('Failed to fetch') ? t('donate.serverUnreachable') : t('donate.genericError')
+      Alert.alert(t('common.error'), msg)
     } finally {
       setLoading(false)
       setShowModal(false)
@@ -73,22 +75,22 @@ export default function DonateButton({ catId, catName, shelterId }: Props) {
         onPress={() => setShowModal(true)}
       >
         <FontAwesome name="dollar" size={14} color="#fff" />
-        <Text style={styles.label}>Donate for {catName}</Text>
+        <Text style={styles.label} numberOfLines={1}>{t('donate.button')}</Text>
       </TouchableOpacity>
 
       <Modal visible={showModal} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.modal}>
-            <Text style={styles.title}>Donate for {catName}</Text>
+            <Text style={styles.title}>{t('donate.title', { name: catName })}</Text>
             <View style={styles.toggleRow}>
               <TouchableOpacity style={[styles.toggleBtn, !isMonthly && styles.toggleBtnActive]} onPress={() => setIsMonthly(false)}>
-                <Text style={[styles.toggleText, !isMonthly && styles.toggleTextActive]}>One-time</Text>
+                <Text style={[styles.toggleText, !isMonthly && styles.toggleTextActive]}>{t('donate.oneTime')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.toggleBtn, isMonthly && styles.toggleBtnActive]} onPress={() => setIsMonthly(true)}>
-                <Text style={[styles.toggleText, isMonthly && styles.toggleTextActive]}>Monthly ♥</Text>
+                <Text style={[styles.toggleText, isMonthly && styles.toggleTextActive]}>{t('donate.monthly')}</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.subtitle}>{isMonthly ? 'Monthly sponsorship (EUR)' : 'One-time donation (EUR)'}</Text>
+            <Text style={styles.subtitle}>{isMonthly ? t('donate.monthlySub') : t('donate.oneTimeSub')}</Text>
 
             <View style={styles.amounts}>
               {DONATION_AMOUNTS.map((a) => (
@@ -111,7 +113,7 @@ export default function DonateButton({ catId, catName, shelterId }: Props) {
               style={styles.cancelBtn}
               onPress={() => setShowModal(false)}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t('donate.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -124,16 +126,22 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
     backgroundColor: '#34c759',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 140,
+    minWidth: 0,
   },
   label: {
     color: '#fff',
     fontSize: 13,
     fontWeight: '700',
+    flexShrink: 1,
   },
   overlay: {
     flex: 1,

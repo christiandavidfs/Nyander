@@ -6,10 +6,12 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { haversineDistance, requestLocation } from '@/lib/location';
 import StaticMap from '@/components/StaticMap';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 import type { Cat } from '@/types';
 
 export default function CrossedPathsScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [cats, setCats] = useState<(Cat & { distance_km: number })[]>([]);
   const [myPos, setMyPos] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ export default function CrossedPathsScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Crossed Paths', headerTintColor: Colors.primary }} />
+      <Stack.Screen options={{ title: t('crossed.title'), headerTintColor: Colors.primary }} />
       {myPos ? (
         <StaticMap
           latitude={myPos.latitude}
@@ -87,13 +89,12 @@ export default function CrossedPathsScreen() {
             {item.image_urls[0] ? <Image source={{ uri: item.image_urls[0] }} style={styles.thumb} /> : <View style={[styles.thumb, { backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' }]}><FontAwesome name="paw" size={24} color="#ccc" /></View>}
             <View style={{ flex: 1 }}>
               <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.meta}>{item.breed || 'Mixed'} • {(item.distance_km * 1000).toFixed(0)}m away</Text>
-              <Text style={styles.bonus}>+20 XP bonus</Text>
+              <Text style={styles.meta}>{item.breed || t('cats.mixedBreed')} • {(item.distance_km * 1000).toFixed(0)}m</Text>
             </View>
             <FontAwesome name="chevron-right" size={14} color={Colors.gray} />
           </TouchableOpacity>
         )}
-        ListEmptyComponent={<View style={styles.centered}><FontAwesome name="paw" size={48} color={Colors.lightGray} /><Text style={styles.empty}>Walk around to discover nearby cats</Text></View>}
+        ListEmptyComponent={<View style={styles.centered}><FontAwesome name="paw" size={48} color={Colors.lightGray} /><Text style={styles.empty}>{t('crossed.walkAround')}</Text></View>}
       />
     </View>
   );

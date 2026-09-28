@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import CountryPicker from '@/components/CountryPicker';
+import { useI18n } from '@/i18n';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -12,10 +13,11 @@ export default function RegisterScreen() {
   const [countryCode, setCountryCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { t } = useI18n();
 
   const handleRegister = async () => {
     if (!email || !password || !displayName) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('register.fillFields'));
       return;
     }
 
@@ -50,10 +52,10 @@ export default function RegisterScreen() {
         if (profileError) throw profileError;
       }
 
-      Alert.alert('Success', 'Account created! Please check your email to confirm.');
+      Alert.alert(t('common.success'), t('register.success'));
       router.replace('/login');
     } catch (err: any) {
-      Alert.alert('Registration failed', err.message || 'Unknown error');
+      Alert.alert(t('register.failed'), err.message || 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -61,13 +63,13 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Join the Nyander community</Text>
+      <Text style={styles.title}>{t('register.title')}</Text>
+      <Text style={styles.subtitle}>{t('register.subtitle')}</Text>
 
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={t('register.email')}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -75,26 +77,26 @@ export default function RegisterScreen() {
         />
         <TextInput
           style={styles.input}
-          placeholder="Display Name"
+          placeholder={t('register.displayName')}
           value={displayName}
           onChangeText={setDisplayName}
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={t('register.password')}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
 
-        <Text style={styles.label}>I am a:</Text>
+        <Text style={styles.label}>{t('register.iAm')}</Text>
         <View style={styles.roleSelector}>
           <TouchableOpacity
             style={[styles.roleOption, role === 'usuario' && styles.selectedOption]}
             onPress={() => setRole('usuario')}
           >
             <Text style={[styles.roleText, role === 'usuario' && styles.selectedText]}>
-              Adopter
+              {t('register.adopter')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -102,18 +104,18 @@ export default function RegisterScreen() {
             onPress={() => setRole('centro')}
           >
             <Text style={[styles.roleText, role === 'centro' && styles.selectedText]}>
-              Shelter
+              {t('register.shelter')}
             </Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.hint}>Businesses: sign up as Adopter or Shelter, then create a sponsor listing from the Sponsors tab.</Text>
+        <Text style={styles.hint}>{t('register.businessHint')}</Text>
 
-        <Text style={styles.label}>Country</Text>
+        <Text style={styles.label}>{t('register.country')}</Text>
         <CountryPicker value={countryCode} onChange={setCountryCode} />
       </View>
 
       <Button
-        title="Create Account"
+        title={t('register.createAccount')}
         onPress={handleRegister}
         disabled={loading}
         color="#ff6b6b"
@@ -121,7 +123,7 @@ export default function RegisterScreen() {
 
       <View style={styles.links}>
         <Text style={styles.link} onPress={() => router.push('/login')}>
-          Already have an account? Sign in
+          {t('register.haveAccount')}
         </Text>
       </View>
 

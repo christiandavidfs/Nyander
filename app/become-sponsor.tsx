@@ -8,6 +8,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 
 const CATEGORIES = ['Pet Store', 'Veterinarian', 'Grooming', 'Boarding', 'Pet Sitting', 'Training', 'Other'];
 
@@ -19,6 +20,7 @@ const PRICES = {
 
 export default function BecomeSponsorScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [step, setStep] = useState(1);
 
   const [businessName, setBusinessName] = useState('');
@@ -80,7 +82,7 @@ export default function BecomeSponsorScreen() {
 
   const handleNext = () => {
     if (!businessName.trim()) {
-      Alert.alert('Required', 'Business name is required.');
+      Alert.alert(t('common.required'), t('becomeSponsor.nameRequired'));
       return;
     }
     setStep(2);
@@ -93,7 +95,7 @@ export default function BecomeSponsorScreen() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        Alert.alert('Sign in required', 'Please sign in to create a sponsor listing.');
+        Alert.alert(t('common.required'), t('becomeSponsor.signInRequired'));
         router.replace('/login');
         return;
       }
@@ -137,7 +139,7 @@ export default function BecomeSponsorScreen() {
 
         const { error } = await supabase.from('sponsors').insert(sponsorPayload);
         if (error) throw error;
-        Alert.alert('Success', 'Your trial listing is now live!');
+        Alert.alert(t('common.success'), t('becomeSponsor.trialSuccess'));
         router.replace('/sponsors');
         return;
       }
@@ -164,7 +166,7 @@ export default function BecomeSponsorScreen() {
         });
         const data = await res.json();
         if (data.mock) {
-          Alert.alert('Success! (demo)', 'Your sponsor listing is now active.');
+          Alert.alert(t('common.success'), t('becomeSponsor.demoSuccess'));
           router.replace('/sponsors');
           return;
         }
@@ -188,7 +190,7 @@ export default function BecomeSponsorScreen() {
         });
         const data = await res.json();
         if (data.mock) {
-          Alert.alert('Success! (demo)', 'Your sponsor listing is now active.');
+          Alert.alert(t('common.success'), t('becomeSponsor.demoSuccess'));
           router.replace('/sponsors');
           return;
         }
@@ -206,7 +208,7 @@ export default function BecomeSponsorScreen() {
         }
       }
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Something went wrong');
+      Alert.alert(t('common.error'), err.message || t('sponsorBtn.genericError'));
     } finally {
       setSubmitting(false);
     }
@@ -214,11 +216,11 @@ export default function BecomeSponsorScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Stack.Screen options={{ title: 'Become a Sponsor', headerTintColor: Colors.primary }} />
+      <Stack.Screen options={{ title: t('becomeSponsor.title'), headerTintColor: Colors.primary }} />
 
       {step === 1 && (
         <>
-          <Text style={styles.stepIndicator}>Step 1 of 2 — Business Info</Text>
+          <Text style={styles.stepIndicator}>{t('becomeSponsor.step1')}</Text>
 
           <TouchableOpacity style={styles.logoPicker} onPress={pickLogo}>
             {logoUri ? (
@@ -226,15 +228,15 @@ export default function BecomeSponsorScreen() {
             ) : (
               <View style={styles.logoPlaceholder}>
                 <FontAwesome name="camera" size={28} color={Colors.gray} />
-                <Text style={styles.logoPlaceholderText}>Add Logo</Text>
+                <Text style={styles.logoPlaceholderText}>{t('becomeSponsor.addLogo')}</Text>
               </View>
             )}
           </TouchableOpacity>
 
-          <Text style={styles.label}>Business Name *</Text>
-          <TextInput style={styles.input} value={businessName} onChangeText={setBusinessName} placeholder="Your business name" />
+          <Text style={styles.label}>{t('becomeSponsor.businessName')}</Text>
+          <TextInput style={styles.input} value={businessName} onChangeText={setBusinessName} placeholder={t('becomeSponsor.businessNamePh')} />
 
-          <Text style={styles.label}>Category</Text>
+          <Text style={styles.label}>{t('becomeSponsor.category')}</Text>
           <View style={styles.categoryRow}>
             {CATEGORIES.map((c) => (
               <TouchableOpacity
@@ -247,30 +249,30 @@ export default function BecomeSponsorScreen() {
             ))}
           </View>
 
-          <Text style={styles.label}>Description</Text>
-          <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Tell users about your business" multiline />
+          <Text style={styles.label}>{t('becomeSponsor.description')}</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder={t('becomeSponsor.descriptionPh')} multiline />
 
-          <Text style={styles.label}>Website</Text>
+          <Text style={styles.label}>{t('becomeSponsor.website')}</Text>
           <TextInput style={styles.input} value={websiteUrl} onChangeText={setWebsiteUrl} placeholder="https://example.com" autoCapitalize="none" keyboardType="url" />
 
-          <Text style={styles.label}>Phone</Text>
+          <Text style={styles.label}>{t('becomeSponsor.phone')}</Text>
           <TextInput style={styles.input} value={phone} onChangeText={setPhone} placeholder="+1 555 000 000" keyboardType="phone-pad" />
 
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>{t('becomeSponsor.email')}</Text>
           <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="contact@business.com" keyboardType="email-address" autoCapitalize="none" />
 
-          <Text style={styles.label}>Address</Text>
-          <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder="City, Street" />
+          <Text style={styles.label}>{t('becomeSponsor.address')}</Text>
+          <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder={t('becomeSponsor.addressPh')} />
 
           <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-            <Text style={styles.nextButtonText}>Next →</Text>
+            <Text style={styles.nextButtonText}>{t('becomeSponsor.next')}</Text>
           </TouchableOpacity>
         </>
       )}
 
       {step === 2 && (
         <>
-          <Text style={styles.stepIndicator}>Step 2 of 2 — Choose Your Plan</Text>
+          <Text style={styles.stepIndicator}>{t('becomeSponsor.step2')}</Text>
           <Text style={styles.businessName}>{businessName}</Text>
 
           <TouchableOpacity
@@ -280,10 +282,10 @@ export default function BecomeSponsorScreen() {
           >
             <Text style={styles.planEmoji}>🎯</Text>
             <View style={styles.planInfo}>
-              <Text style={styles.planName}>Trial</Text>
-              <Text style={styles.planDesc}>14 days free, no payment needed</Text>
+              <Text style={styles.planName}>{t('becomeSponsor.trial')}</Text>
+              <Text style={styles.planDesc}>{t('becomeSponsor.trialDesc')}</Text>
             </View>
-            <Text style={styles.planPrice}>Free</Text>
+            <Text style={styles.planPrice}>{t('becomeSponsor.free')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -293,8 +295,8 @@ export default function BecomeSponsorScreen() {
           >
             <Text style={styles.planEmoji}>📅</Text>
             <View style={styles.planInfo}>
-              <Text style={styles.planName}>Monthly</Text>
-              <Text style={styles.planDesc}>Cancel anytime</Text>
+              <Text style={styles.planName}>{t('becomeSponsor.monthly')}</Text>
+              <Text style={styles.planDesc}>{t('becomeSponsor.monthlyDesc')}</Text>
             </View>
             <Text style={styles.planPrice}>$15/mo</Text>
           </TouchableOpacity>
@@ -304,11 +306,11 @@ export default function BecomeSponsorScreen() {
             onPress={() => handleSelectPlan('yearly')}
             disabled={submitting}
           >
-            <View style={styles.bestBadge}><Text style={styles.bestBadgeText}>BEST VALUE</Text></View>
+            <View style={styles.bestBadge}><Text style={styles.bestBadgeText}>{t('becomeSponsor.bestValue')}</Text></View>
             <Text style={styles.planEmoji}>⭐</Text>
             <View style={styles.planInfo}>
-              <Text style={styles.planName}>Yearly</Text>
-              <Text style={styles.planDesc}>$150/year — save 2 months</Text>
+              <Text style={styles.planName}>{t('becomeSponsor.yearly')}</Text>
+              <Text style={styles.planDesc}>{t('becomeSponsor.yearlyDesc')}</Text>
             </View>
             <Text style={styles.planPrice}>$150/yr</Text>
           </TouchableOpacity>

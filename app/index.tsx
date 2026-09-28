@@ -4,11 +4,13 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 import type { UserProfile } from '@/types';
 
 type HomeSession = Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session'];
 
 export default function IndexScreen() {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<HomeSession>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -64,7 +66,7 @@ export default function IndexScreen() {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color={Colors.primary} />
-        <Text>Loading...</Text>
+        <Text>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -76,27 +78,27 @@ export default function IndexScreen() {
       <FontAwesome name="paw" size={48} color={Colors.primary} />
       <Text style={styles.title}>Nyander</Text>
       <Text style={styles.subtitle}>
-        {isShelter ? 'Manage your cats and find adopters' : 'Find your perfect feline friend'}
+        {isShelter ? t('index.taglineShelter') : t('index.taglineAdopter')}
       </Text>
       {!isSupabaseConfigured && (
         <Text style={styles.notice}>
-          Demo mode is active. Configure Supabase env vars to enable real accounts.
+          {t('index.demoNotice')}
         </Text>
       )}
       {session || !isSupabaseConfigured ? (
         <View style={styles.buttons}>
           <Text style={styles.welcome}>
-            Welcome, {profile?.display_name ?? session?.user?.email ?? 'Guest'}!
+            {t('index.welcome', { name: profile?.display_name ?? session?.user?.email ?? t('common.guest') })}
           </Text>
           <Button
-            title={isShelter ? 'My Cats' : 'View Pets'}
+            title={isShelter ? t('index.myCats') : t('index.viewPets')}
             onPress={() => router.push('/cats')}
             color={Colors.primary}
           />
-          <Button title="Messages" onPress={() => router.push('/messages')} color={Colors.secondary} />
-          <Button title="Profile" onPress={() => router.push('/profile')} color={Colors.gray} />
+          <Button title={t('index.messages')} onPress={() => router.push('/messages')} color={Colors.secondary} />
+          <Button title={t('index.profile')} onPress={() => router.push('/profile')} color={Colors.gray} />
           {session && (
-            <Button title="Sign Out" onPress={async () => {
+            <Button title={t('index.signOut')} onPress={async () => {
               await supabase.auth.signOut();
               setProfile(null);
             }} color={Colors.error} />
@@ -104,8 +106,8 @@ export default function IndexScreen() {
         </View>
       ) : (
         <View style={styles.buttons}>
-          <Button title="Sign In" onPress={() => router.push('/login')} color={Colors.primary} />
-          <Button title="Sign Up" onPress={() => router.push('/register')} color={Colors.secondary} />
+          <Button title={t('index.signIn')} onPress={() => router.push('/login')} color={Colors.primary} />
+          <Button title={t('index.signUp')} onPress={() => router.push('/register')} color={Colors.secondary} />
         </View>
       )}
     </View>

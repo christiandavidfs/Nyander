@@ -6,6 +6,7 @@ import { useRouter, Stack } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 import type { Sponsor } from '@/types';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -17,6 +18,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function ManageSponsorScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [sponsor, setSponsor] = useState<Sponsor | null>(null);
   const [clickCount, setClickCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -57,10 +59,10 @@ export default function ManageSponsorScreen() {
 
   const handleCancel = async () => {
     if (!sponsor) return;
-    Alert.alert('Cancel Listing', 'Are you sure? Your listing will no longer be visible.', [
-      { text: 'Keep', style: 'cancel' },
+    Alert.alert(t('manageSponsor.confirmTitle'), t('manageSponsor.confirmMsg'), [
+      { text: t('manageSponsor.keep'), style: 'cancel' },
       {
-        text: 'Cancel', style: 'destructive',
+        text: t('manageSponsor.cancel'), style: 'destructive',
         onPress: async () => {
           try {
             if (sponsor.paypal_subscription_id) {
@@ -72,9 +74,9 @@ export default function ManageSponsorScreen() {
             }
             await supabase.from('sponsors').update({ status: 'expired' }).eq('id', sponsor.id);
             setSponsor({ ...sponsor, status: 'expired' });
-            Alert.alert('Cancelled', 'Your listing has been deactivated.');
+            Alert.alert(t('common.success'), t('manageSponsor.cancelled'));
           } catch (err: any) {
-            Alert.alert('Error', err.message);
+            Alert.alert(t('common.error'), err.message);
           }
         },
       },
@@ -96,10 +98,10 @@ export default function ManageSponsorScreen() {
           Linking.openURL(data.approval_url);
         }
       } catch (err: any) {
-        Alert.alert('Error', err.message);
+        Alert.alert(t('common.error'), err.message);
       }
     } else {
-      Alert.alert('Contact Us', 'To change your plan, please contact support.');
+      Alert.alert(t('common.success'), t('manageSponsor.contactSupport'));
     }
   };
 
@@ -115,20 +117,20 @@ export default function ManageSponsorScreen() {
     return (
       <View style={styles.centered}>
         <FontAwesome name="building" size={64} color={Colors.lightGray} />
-        <Text style={styles.emptyTitle}>No listing yet</Text>
-        <Text style={styles.emptyText}>Create your sponsor listing to get started.</Text>
+        <Text style={styles.emptyTitle}>{t('manageSponsor.empty')}</Text>
+        <Text style={styles.emptyText}>{t('manageSponsor.emptySub')}</Text>
         <TouchableOpacity style={styles.createButton} onPress={() => router.push('/become-sponsor')}>
-          <Text style={styles.createButtonText}>Become a Sponsor</Text>
+          <Text style={styles.createButtonText}>{t('manageSponsor.create')}</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  const planLabel = sponsor.plan === 'trial' ? 'Trial' : sponsor.plan === 'monthly' ? `Monthly $${sponsor.amount}/mo` : `Yearly $${sponsor.amount}/yr`;
+  const planLabel = sponsor.plan === 'trial' ? t('manageSponsor.trialPlan') : sponsor.plan === 'monthly' ? `Monthly $${sponsor.amount}/mo` : `Yearly $${sponsor.amount}/yr`;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Stack.Screen options={{ title: 'My Listing', headerTintColor: Colors.primary }} />
+      <Stack.Screen options={{ title: t('manageSponsor.title'), headerTintColor: Colors.primary }} />
 
       <View style={styles.logoSection}>
         {sponsor.logo_url ? (
@@ -156,30 +158,30 @@ export default function ManageSponsorScreen() {
         <View style={styles.statBox}>
           <FontAwesome name="mouse-pointer" size={16} color={Colors.primary} />
           <Text style={styles.statValue}>{clickCount}</Text>
-          <Text style={styles.statLabel}>Clicks</Text>
+          <Text style={styles.statLabel}>{t('sponsorDetail.clicks')}</Text>
         </View>
         <View style={styles.statBox}>
           <FontAwesome name="star" size={16} color={Colors.accent} />
           <Text style={styles.statValue}>{sponsor.ranking}</Text>
-          <Text style={styles.statLabel}>Ranking</Text>
+          <Text style={styles.statLabel}>{t('sponsorDetail.ranking')}</Text>
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Plan Details</Text>
+        <Text style={styles.sectionTitle}>{t('manageSponsor.planDetails')}</Text>
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Plan</Text>
+          <Text style={styles.detailLabel}>{t('manageSponsor.plan')}</Text>
           <Text style={styles.detailValue}>{planLabel}</Text>
         </View>
         {sponsor.trial_ends_at && (
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Trial ends</Text>
+            <Text style={styles.detailLabel}>{t('manageSponsor.trialEnds')}</Text>
             <Text style={styles.detailValue}>{new Date(sponsor.trial_ends_at).toLocaleDateString()}</Text>
           </View>
         )}
         {sponsor.expires_at && (
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Expires</Text>
+            <Text style={styles.detailLabel}>{t('manageSponsor.expires')}</Text>
             <Text style={styles.detailValue}>{new Date(sponsor.expires_at).toLocaleDateString()}</Text>
           </View>
         )}
@@ -189,18 +191,18 @@ export default function ManageSponsorScreen() {
         {sponsor.status === 'trial' && (
           <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
             <FontAwesome name="rocket" size={16} color="#fff" />
-            <Text style={styles.buttonText}>Upgrade to Monthly</Text>
+            <Text style={styles.buttonText}>{t('manageSponsor.upgrade')}</Text>
           </TouchableOpacity>
         )}
         {(sponsor.status === 'active' || sponsor.status === 'trial') && (
           <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
             <FontAwesome name="times-circle" size={16} color={Colors.error} />
-            <Text style={styles.cancelButtonText}>Deactivate Listing</Text>
+            <Text style={styles.cancelButtonText}>{t('manageSponsor.deactivate')}</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity style={styles.viewButton} onPress={() => router.push(`/sponsors/${sponsor.id}`)}>
           <FontAwesome name="eye" size={16} color={Colors.primary} />
-          <Text style={styles.viewButtonText}>View Public Listing</Text>
+          <Text style={styles.viewButtonText}>{t('manageSponsor.viewPublic')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

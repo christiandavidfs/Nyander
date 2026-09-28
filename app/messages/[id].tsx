@@ -7,11 +7,13 @@ import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 import type { Message, UserProfile } from '@/types';
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useI18n();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -41,8 +43,8 @@ export default function ChatScreen() {
             supabase.from('cats').select('name').eq('id', conv.cat_id).maybeSingle(),
             supabase.from('profiles').select('display_name, email').eq('id', otherId).maybeSingle(),
           ]);
-          const catName = (cat as any)?.name ?? 'Cat';
-          const otherName = (other as any)?.display_name || (other as any)?.email || 'User';
+          const catName = (cat as any)?.name ?? t('common.cat');
+          const otherName = (other as any)?.display_name || (other as any)?.email || t('common.user');
           setChatTitle(`${catName} · ${otherName}`);
         }
       } catch (err) {
@@ -129,7 +131,7 @@ export default function ChatScreen() {
         {messages.length === 0 ? (
           <View style={styles.centered}>
             <FontAwesome name="comments" size={48} color={Colors.lightGray} />
-            <Text style={styles.emptyText}>Start the conversation</Text>
+            <Text style={styles.emptyText}>{t('chat.startConversation')}</Text>
           </View>
         ) : (
           <FlatList
@@ -158,7 +160,7 @@ export default function ChatScreen() {
             style={styles.input}
             value={input}
             onChangeText={setInput}
-            placeholder="Type a message..."
+            placeholder={t('chat.typeMessage')}
             multiline
             maxLength={1000}
           />

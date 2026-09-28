@@ -6,12 +6,14 @@ import { useRouter, Stack } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
+import { useI18n } from '@/i18n';
 import type { Sponsor } from '@/types';
 
 type SponsorWithClicks = Sponsor & { click_count: number };
 
 export default function SponsorsScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const [sponsors, setSponsors] = useState<SponsorWithClicks[]>([]);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
@@ -98,33 +100,33 @@ export default function SponsorsScreen() {
     return (
       <View style={styles.centered}>
         <FontAwesome name="building" size={64} color={Colors.lightGray} />
-        <Text style={styles.emptyText}>Configure Supabase to see sponsors.</Text>
+        <Text style={styles.emptyText}>{t('sponsors.configNeeded')}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Sponsors', headerTintColor: Colors.primary }} />
+      <Stack.Screen options={{ title: t('sponsors.title'), headerTintColor: Colors.primary }} />
       <View style={styles.header}>
-        <Text style={styles.heading}>Sponsors</Text>
-        <Text style={styles.subtitle}>Pet stores, vets & more</Text>
+        <Text style={styles.heading}>{t('sponsors.title')}</Text>
+        <Text style={styles.subtitle}>{t('sponsors.subtitle')}</Text>
       </View>
       {mySponsorId ? (
         <TouchableOpacity style={styles.myListingBanner} onPress={() => router.push('/manage-sponsor')}>
           <FontAwesome name="id-card" size={18} color="#fff" />
-          <Text style={styles.myListingText}>My Sponsor Listing</Text>
+          <Text style={styles.myListingText}>{t('sponsors.myBusiness')}</Text>
           <FontAwesome name="chevron-right" size={14} color="#fff" />
         </TouchableOpacity>
       ) : session ? (
         <TouchableOpacity style={styles.ctaBanner} onPress={() => router.push('/become-sponsor')}>
           <FontAwesome name="rocket" size={18} color="#fff" />
-          <Text style={styles.ctaText}>Become a Sponsor →</Text>
+          <Text style={styles.ctaText}>{t('sponsors.advertiseCta')}</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity style={styles.ctaBanner} onPress={() => router.push('/login')}>
           <FontAwesome name="sign-in" size={18} color="#fff" />
-          <Text style={styles.ctaText}>Sign in to become a sponsor →</Text>
+          <Text style={styles.ctaText}>{t('sponsors.signInCta')}</Text>
         </TouchableOpacity>
       )}
 
@@ -167,10 +169,10 @@ export default function SponsorsScreen() {
                 )}
                 <View style={styles.stats}>
                   <FontAwesome name="mouse-pointer" size={12} color={Colors.gray} />
-                  <Text style={styles.statText}>{item.click_count} clicks</Text>
+                  <Text style={styles.statText}>{t('sponsors.clicks', { n: item.click_count })}</Text>
                   {item.plan === 'trial' && (
                     <View style={styles.trialBadge}>
-                      <Text style={styles.trialText}>Trial</Text>
+                      <Text style={styles.trialText}>{t('sponsors.trial')}</Text>
                     </View>
                   )}
                 </View>
