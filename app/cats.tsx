@@ -2,8 +2,8 @@ import { Animated, Dimensions, Image, PanResponder, Pressable, StyleSheet, Text,
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { FontAwesome } from '@expo/vector-icons';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { mockCats } from '@/data/mockCats';
@@ -182,6 +182,27 @@ export default function CatDeckScreen() {
 
     return () => { cancelled = true; };
   }, []);
+
+  // Role can change out-of-band (e.g. upgraded to shelter in another session):
+  // refresh profile every time the screen gains focus so deck/dashboard switch.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        if (!isSupabaseConfigured) return;
+        try {
+          const { data: { session: s } } = await supabase.auth.getSession();
+          if (!s?.user || !active) return;
+          const { data: p } = await supabase.from('profiles').select('*').eq('id', s.user.id).maybeSingle();
+          if (active && p) {
+            setProfile(p as UserProfile);
+            setSession(s);
+          }
+        } catch (_) {}
+      })();
+      return () => { active = false; };
+    }, [])
+  );
 
   useEffect(() => {
     setCurrentIndex(0);

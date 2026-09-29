@@ -4,7 +4,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { I18nProvider, useI18n } from '@/i18n';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 function TabLayoutInner() {
@@ -32,6 +33,22 @@ function TabLayoutInner() {
     });
     return () => { cancelled = true; subscription.unsubscribe(); };
   }, []);
+
+  // Same staleness guard as the Pets screen: re-check role on navigation.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      (async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.user || cancelled) return;
+          const { data } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+          if (!cancelled) setIsShelter((data as any)?.role === 'centro');
+        } catch (_) {}
+      })();
+      return () => { cancelled = true; };
+    }, [])
+  );
 
   return (
     <Tabs
