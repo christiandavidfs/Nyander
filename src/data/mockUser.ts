@@ -11,6 +11,7 @@ export const mockUser: UserProfile = {
   latitude: null,
   longitude: null,
   paypal_email: null,
+  website_url: null,
   avatar_url: null,
   country_code: null,
   created_at: '2026-06-01T08:00:00.000Z',
