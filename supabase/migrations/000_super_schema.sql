@@ -644,13 +644,20 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, role, display_name, score)
+  INSERT INTO public.profiles (id, email, role, display_name, score, country_code)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'role', 'usuario'),
     COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)),
-    0
+    0,
+    CASE
+      WHEN EXISTS (
+        SELECT 1 FROM public.countries
+        WHERE code = NULLIF(NEW.raw_user_meta_data->>'country_code', '')
+      ) THEN NEW.raw_user_meta_data->>'country_code'
+      ELSE NULL
+    END
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;

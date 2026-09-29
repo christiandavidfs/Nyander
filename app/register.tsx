@@ -31,26 +31,15 @@ export default function RegisterScreen() {
             display_name: displayName,
             role,
             score: 0,
+            country_code: countryCode,
           },
         },
       });
 
       if (error) throw error;
 
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: data.user.id,
-            email: data.user.email,
-            role,
-            display_name: displayName,
-            score: 0,
-            country_code: countryCode,
-          });
-
-        if (profileError) throw profileError;
-      }
+      // Profile row is created by the handle_new_user trigger (SECURITY DEFINER).
+      // No client-side write: without an active session it violates RLS.
 
       Alert.alert(t('common.success'), t('register.success'));
       router.replace('/login');
