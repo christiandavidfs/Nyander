@@ -272,6 +272,10 @@ export default {
     select: 'Elegir país',
     title: 'Elige tu país',
   },
+  authCallback: {
+    loading: 'Completando el acceso...',
+    invalid: 'Enlace de acceso inválido.',
+  },
   categories: {
     petStore: 'Tienda de mascotas',
     veterinarian: 'Veterinaria',

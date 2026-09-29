@@ -41,8 +41,11 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       // Native must open the provider URL in a session browser and come back
-      // via the nyander:// deep link (handled in _layout); web redirects directly.
-      const redirectTo = Platform.OS === 'web' ? window.location.origin : 'nyander://';
+      // via the nyander:// deep link (handled in _layout); web returns to the
+      // dedicated /auth/callback route which exchanges the hash tokens.
+      const redirectTo = Platform.OS === 'web'
+        ? `${window.location.origin}/auth/callback`
+        : 'nyander://';
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo, skipBrowserRedirect: Platform.OS !== 'web' },

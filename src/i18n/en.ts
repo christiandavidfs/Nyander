@@ -272,6 +272,10 @@ export default {
     select: 'Select country',
     title: 'Select Country',
   },
+  authCallback: {
+    loading: 'Completing sign in...',
+    invalid: 'Invalid sign-in link.',
+  },
   categories: {
     petStore: 'Pet Store',
     veterinarian: 'Veterinarian',
