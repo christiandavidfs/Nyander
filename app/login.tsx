@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, TextInput, Button, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, Alert, ActivityIndicator, Platform } from 'react-native';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useI18n } from '@/i18n';
 
 export default function LoginScreen() {
@@ -39,11 +40,22 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
+      // Native must open the provider URL in a session browser and come back
+      // via the nyander:// deep link (handled in _layout); web redirects directly.
+      const redirectTo = Platform.OS === 'web' ? window.location.origin : 'nyander://';
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
+        options: { redirectTo, skipBrowserRedirect: Platform.OS !== 'web' },
       });
 
       if (error) throw error;
+
+      if (data?.url && Platform.OS !== 'web') {
+        WebBrowser.maybeCompleteAuthSession();
+        await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        // Session arrives through the deep-link handler; auth state updates automatically.
+        router.replace('/');
+      }
     } catch (err: any) {
       Alert.alert(t('login.googleFailed'), err.message);
     } finally {
