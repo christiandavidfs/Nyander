@@ -10,6 +10,7 @@ import {
   Image,
   ActivityIndicator,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -213,7 +214,11 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
       {/* Header / Avatar */}
       <View style={styles.header}>
         <TouchableOpacity onPress={pickAvatar} disabled={uploading || !editing}>
@@ -361,7 +366,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
         <Button title={t('profile.signOut')} onPress={handleSignOut} color={Colors.error} />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -369,6 +374,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  content: {
+    paddingBottom: 100,
   },
   centered: {
     flex: 1,

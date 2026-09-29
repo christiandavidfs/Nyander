@@ -797,6 +797,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
         <View style={{ flex: 1 }}>
           <Text style={styles.heading}>{t('shelter.myCats')}</Text>
           <Text style={styles.subheading}>{profile.display_name ?? ''} • {t('shelter.catsRegistered', { n: myCats.length })}</Text>
+          <Text style={styles.sessionEmail}>{profile.email ?? ''}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {isSupabaseConfigured && (
@@ -1334,6 +1335,11 @@ const styles = StyleSheet.create({
   subheading: {
     color: '#666',
     fontSize: 13,
+    marginTop: 2,
+  },
+  sessionEmail: {
+    color: '#999',
+    fontSize: 11,
     marginTop: 2,
   },
   filterRow: {
