@@ -337,6 +337,7 @@ export default {
     editTitle: 'Edit pet',
     updated: '{name} updated!',
     added: '{name} published!',
+    addedNoLocation: '{name} published! No location: it won\'t appear in Crossed until you enable GPS.',
     saving: 'Saving...',
     saveChanges: 'Save changes',
     status: 'Status',

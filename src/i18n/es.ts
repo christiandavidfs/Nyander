@@ -337,6 +337,7 @@ export default {
     editTitle: 'Editar mascota',
     updated: '¡{name} actualizado!',
     added: '¡{name} publicado!',
+    addedNoLocation: '¡{name} publicado! Sin ubicación: no aparecerá en Cruces hasta que actives el GPS.',
     saving: 'Guardando...',
     saveChanges: 'Guardar cambios',
     status: 'Estado',

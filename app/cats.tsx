@@ -687,6 +687,25 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
     setAddModal(true);
   };
 
+  const geocodeAddress = async (query: string): Promise<{ latitude: number; longitude: number } | null> => {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,
+        { signal: ctrl.signal, headers: { Accept: 'application/json' } }
+      );
+      clearTimeout(timer);
+      const data = await res.json();
+      if (data?.[0]?.lat && data?.[0]?.lon) {
+        return { latitude: Number(data[0].lat), longitude: Number(data[0].lon) };
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  };
+
   const handleSaveCat = async () => {
     if (!formName.trim()) { Alert.alert(t('common.required'), t('shelter.nameRequired')); return; }
     setSubmitting(true);
@@ -705,6 +724,23 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
         }
       }
 
+      // Resolve coordinates: profile GPS → fresh GPS → geocode address text.
+      // Without coords the cat is invisible in Crossed and shows "distance unknown".
+      let lat: number | null = profile.latitude != null ? Number(profile.latitude) : null;
+      let lng: number | null = profile.longitude != null ? Number(profile.longitude) : null;
+      const addressText = formLocation.trim() || profile.address || null;
+      if ((lat == null || lng == null) && isSupabaseConfigured) {
+        const gps = await requestLocation();
+        if (gps) {
+          lat = gps.latitude;
+          lng = gps.longitude;
+          await supabase.from('profiles').update({ latitude: lat, longitude: lng }).eq('id', profile.id);
+        } else if (addressText) {
+          const geo = await geocodeAddress(addressText);
+          if (geo) { lat = geo.latitude; lng = geo.longitude; }
+        }
+      }
+
       if (editingId) {
         const { error } = await supabase.from('cats').update({
           name: formName.trim(),
@@ -713,6 +749,8 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
           description: formDescription || null,
           health_status: formHealth || null,
           location: formLocation || null,
+          latitude: lat,
+          longitude: lng,
           image_urls: imageUrls,
           video_urls: videoUrls,
           status: formStatus,
@@ -727,16 +765,20 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
           breed: formBreed || null,
           description: formDescription || null,
           health_status: formHealth || null,
-          location: formLocation || profile.address || null,
-          latitude: profile.latitude,
-          longitude: profile.longitude,
+          location: addressText,
+          latitude: lat,
+          longitude: lng,
           image_urls: imageUrls,
           video_urls: videoUrls,
           country_code: profile.country_code,
           status: 'available',
         });
         if (error) throw error;
-        Alert.alert(t('common.success'), t('shelter.added', { name: formName.trim() }));
+        if (lat == null || lng == null) {
+          Alert.alert(t('common.success'), t('shelter.addedNoLocation', { name: formName.trim() }));
+        } else {
+          Alert.alert(t('common.success'), t('shelter.added', { name: formName.trim() }));
+        }
       }
       setAddModal(false);
       resetForm();
