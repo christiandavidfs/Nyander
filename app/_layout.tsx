@@ -1,5 +1,5 @@
-import { Platform } from 'react-native';
-import { Tabs } from 'expo-router';
+import { Platform, Linking, Alert } from 'react-native';
+import { Tabs, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
@@ -11,7 +11,35 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 function TabLayoutInner() {
   const insets = useSafeAreaInsets();
   const { t } = useI18n();
+  const router = useRouter();
   const [isShelter, setIsShelter] = useState(false);
+
+  // Email-confirmation / magic links land here (web hash or nyander:// deep link):
+  // exchange tokens for a session instead of stranding the user on a dead URL.
+  useEffect(() => {
+    const handleUrl = async (url: string) => {
+      try {
+        const hashIndex = url.indexOf('#');
+        if (hashIndex === -1) return;
+        const params = new URLSearchParams(url.slice(hashIndex + 1));
+        const err = params.get('error');
+        if (err) {
+          const desc = (params.get('error_description') || err).replace(/\+/g, ' ');
+          Alert.alert(t('common.error'), desc);
+          return;
+        }
+        const access_token = params.get('access_token');
+        const refresh_token = params.get('refresh_token');
+        if (access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (!error) router.replace('/');
+        }
+      } catch (_) {}
+    };
+    Linking.getInitialURL().then((u) => { if (u) handleUrl(u); }).catch(() => {});
+    const sub = Linking.addEventListener('url', ({ url }) => handleUrl(url));
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
