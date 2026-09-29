@@ -724,20 +724,31 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
         }
       }
 
-      // Resolve coordinates: profile GPS → fresh GPS → geocode address text.
+      // Coordinates come from the shelter's address (source of truth):
+      // geocode address text → profile GPS → fresh GPS.
       // Without coords the cat is invisible in Crossed and shows "distance unknown".
-      let lat: number | null = profile.latitude != null ? Number(profile.latitude) : null;
-      let lng: number | null = profile.longitude != null ? Number(profile.longitude) : null;
       const addressText = formLocation.trim() || profile.address || null;
+      let lat: number | null = null;
+      let lng: number | null = null;
+      if (addressText && isSupabaseConfigured) {
+        const geo = await geocodeAddress(addressText);
+        if (geo) {
+          lat = geo.latitude;
+          lng = geo.longitude;
+          // Shelter position follows its address
+          await supabase.from('profiles').update({ latitude: lat, longitude: lng }).eq('id', profile.id);
+        }
+      }
+      if (lat == null || lng == null) {
+        lat = profile.latitude != null ? Number(profile.latitude) : null;
+        lng = profile.longitude != null ? Number(profile.longitude) : null;
+      }
       if ((lat == null || lng == null) && isSupabaseConfigured) {
         const gps = await requestLocation();
         if (gps) {
           lat = gps.latitude;
           lng = gps.longitude;
           await supabase.from('profiles').update({ latitude: lat, longitude: lng }).eq('id', profile.id);
-        } else if (addressText) {
-          const geo = await geocodeAddress(addressText);
-          if (geo) { lat = geo.latitude; lng = geo.longitude; }
         }
       }
 

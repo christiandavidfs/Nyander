@@ -36,6 +36,7 @@ export default function ProfileScreen() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [paypalEmail, setPaypalEmail] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
   const [countryCode, setCountryCode] = useState<string | null>(null);
 
   const router = useRouter();
@@ -88,6 +89,7 @@ export default function ProfileScreen() {
         setPhone(data.phone ?? '');
         setAddress(data.address ?? '');
         setPaypalEmail(data.paypal_email ?? '');
+        setWebsiteUrl((data as any).website_url ?? '');
         setCountryCode(data.country_code ?? null);
       }
     } catch (err) {
@@ -98,11 +100,15 @@ export default function ProfileScreen() {
   const saveProfile = async () => {
     setSaving(true);
     try {
+      const rawWebsite = websiteUrl.trim();
       const updates: Record<string, any> = {
         display_name: displayName || null,
         phone: phone || null,
         address: address || null,
         paypal_email: paypalEmail || null,
+        website_url: rawWebsite
+          ? (/^https?:\/\//i.test(rawWebsite) ? rawWebsite : `https://${rawWebsite}`)
+          : null,
         country_code: countryCode || null,
       };
 
@@ -298,6 +304,15 @@ export default function ProfileScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
+              <Text style={styles.fieldLabel}>{t('profile.website')}</Text>
+              <TextInput
+                style={styles.input}
+                value={websiteUrl}
+                onChangeText={setWebsiteUrl}
+                placeholder="https://mishelter.com"
+                keyboardType="url"
+                autoCapitalize="none"
+              />
             </>
           )}
           <Text style={styles.fieldLabel}>{t('profile.country')}</Text>
@@ -318,6 +333,12 @@ export default function ProfileScreen() {
               <View style={styles.infoRow}>
                 <FontAwesome name="home" size={14} color={Colors.gray} />
                 <Text style={styles.infoText}>{profile.address}</Text>
+              </View>
+            )}
+            {profile?.role === 'centro' && (profile as any)?.website_url && (
+              <View style={styles.infoRow}>
+                <FontAwesome name="globe" size={14} color={Colors.gray} />
+                <Text style={styles.infoText}>{(profile as any).website_url}</Text>
               </View>
             )}
             {!profile?.phone && !profile?.address && (

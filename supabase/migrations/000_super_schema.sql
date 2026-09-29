@@ -74,6 +74,7 @@ CREATE TABLE profiles (
   score INTEGER DEFAULT 0,
   paypal_customer_id TEXT,
   paypal_email TEXT,
+  website_url TEXT,
   avatar_url TEXT,
   country_code TEXT REFERENCES countries(code),
   created_at TIMESTAMPTZ DEFAULT NOW(),

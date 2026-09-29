@@ -218,6 +218,7 @@ export default {
     address: 'Address',
     addressPh: 'City, Street',
     paypalEmail: 'PayPal Email (for payouts)',
+    website: 'Website',
     country: 'Country',
     contactInfo: 'Contact Info',
     noContact: 'No contact info set.',

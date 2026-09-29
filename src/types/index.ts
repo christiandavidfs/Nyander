@@ -39,6 +39,7 @@ export type UserProfile = {
   longitude: number | null
   score: number
   paypal_email: string | null
+  website_url: string | null
   avatar_url: string | null
   country_code: string | null
   created_at: string
