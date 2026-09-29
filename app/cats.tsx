@@ -564,7 +564,7 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
     setLoading(false);
   };
 
-  useEffect(() => { loadMyCats(); }, []);
+  useEffect(() => { loadMyCats(); }, [profile.id]);
 
   const loadRequests = async () => {
     if (!isSupabaseConfigured) return;
@@ -794,9 +794,9 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.heading}>{t('shelter.myCats')}</Text>
-          <Text style={styles.subheading}>{t('shelter.catsRegistered', { n: myCats.length })}</Text>
+          <Text style={styles.subheading}>{profile.display_name ?? ''} • {t('shelter.catsRegistered', { n: myCats.length })}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {isSupabaseConfigured && (
@@ -817,6 +817,10 @@ function ShelterDashboard({ profile }: { profile: UserProfile }) {
           <FontAwesome name="paw" size={54} color="#ccc" />
           <Text style={styles.doneTitle}>{t('shelter.noCats')}</Text>
           <Text style={styles.doneText}>{t('shelter.noCatsSub')}</Text>
+          <TouchableOpacity style={styles.addButton} onPress={() => { resetForm(); setAddModal(true); }}>
+            <FontAwesome name="plus" size={16} color="#fff" />
+            <Text style={styles.addButtonText}>{t('shelter.addPet')}</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
